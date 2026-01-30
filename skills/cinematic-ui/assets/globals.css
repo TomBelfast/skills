@@ -1,0 +1,79 @@
+@layer base {
+    :root {
+        --background: 210 3% 12%;
+        --foreground: 210 20% 98%;
+        --primary: 142.1 70.6% 45.3%;
+        --laser-color: rgba(16, 185, 129, 0.9);
+        --laser-glow: rgba(16, 185, 129, 0.2);
+    }
+}
+
+@layer utilities {
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(40px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.5s ease;
+        @apply shadow-2xl;
+    }
+
+    .glass-card:hover {
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 15px var(--laser-glow);
+        border-color: var(--laser-color);
+        border-width: 1.2px;
+    }
+
+    .card-3d-cinematic {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(40px);
+        transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+        transform-style: preserve-3d;
+        perspective: 2000px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-3d-cinematic:hover {
+        transform: translateY(-8px) rotateX(4deg) rotateY(2deg);
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), 0 0 20px var(--laser-glow);
+        border-color: var(--laser-color);
+        border-width: 1.5px;
+    }
+
+    .text-title {
+        @apply font-black italic tracking-tighter bg-clip-text text-transparent uppercase;
+        background-image: linear-gradient(to right, #6ee7b7, #10b981, #065f46);
+        text-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
+    }
+
+    .text-label {
+        @apply text-[11px] font-black uppercase tracking-[0.3em] text-white/60 leading-tight font-sans;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        @apply bg-white/10 rounded-full transition-colors;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        @apply bg-emerald-500/40;
+    }
+
+    /* Global bold+italic emerald gradient rule */
+    .italic.font-bold,
+    .italic.font-black,
+    strong.italic,
+    b.italic,
+    em.font-bold,
+    i.font-bold {
+        @apply bg-clip-text text-transparent;
+        background-image: linear-gradient(to right, #6ee7b7, #10b981, #065f46);
+    }
+}
