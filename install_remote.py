@@ -86,9 +86,10 @@ def main():
     targets = []
 
     # 1. Antigravity
-    ag_path = home / ".gemini" / "antigravity" / "skills"
+    # 1. Antigravity / Gemini (Standard path from GEMINI.md)
+    ag_path = home / ".gemini" / "skills"
     if args.antigravity or (args.all and ag_path.parent.exists()):
-        targets.append({"name": "Antigravity", "path": ag_path, "flatten": False})
+        targets.append({"name": "Gemini/Antigravity", "path": ag_path, "flatten": False})
 
     # 2. Claude
     claude_path = home / ".claude" / "skills"
