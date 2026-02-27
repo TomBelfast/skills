@@ -172,12 +172,12 @@ function nodeStyle(type) {
   };
 }
 
-export default function TopologyMap({ devices, links }) {
+export default function TopologyMap({ devices = [], links = [] }) {
   const containerRef = useRef(null);
   const cyRef        = useRef(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !devices.length) return;
 
     const nodes = devices.map(d => ({
       data: {
