@@ -1,7 +1,11 @@
+import logging
 from fastapi import FastAPI, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from app.db.session import get_db
+
+log = logging.getLogger(__name__)
 from app.api.v1.devices import router as devices_router
 from app.api.v1.links import router as links_router
 from app.api.v1.discovery import router as discovery_router
@@ -19,8 +23,11 @@ async def health_ready(db: AsyncSession = Depends(get_db)):
     try:
         await db.execute(text("SELECT 1"))
         db_status = "ok"
-    except Exception:
+    except Exception as exc:
+        log.warning("DB health check failed: %s", exc)
         db_status = "error"
+    if db_status == "error":
+        return JSONResponse(status_code=503, content={"status": "ok", "db": "error"})
     return {"status": "ok", "db": db_status}
 
 
