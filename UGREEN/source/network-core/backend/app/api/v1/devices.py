@@ -17,7 +17,7 @@ async def create_device(data: DeviceCreate, db: AsyncSession = Depends(get_db)):
     return await device_service.create_device(db, data)
 
 
-@router.get("/{device_id}", response_model=DeviceRead)
+@router.get("/{device_id}", response_model=DeviceRead, status_code=status.HTTP_200_OK)
 async def get_device(device_id: str, db: AsyncSession = Depends(get_db)):
     device = await device_service.get_device(db, device_id)
     if not device:

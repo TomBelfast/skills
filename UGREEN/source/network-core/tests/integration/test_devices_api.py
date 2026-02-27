@@ -50,8 +50,9 @@ async def test_get_device_by_id(client):
     device_id = create.json()["id"]
     resp = await client.get(f"/api/v1/devices/{device_id}")
     assert resp.status_code == 200
-    assert resp.json()["id"] == device_id
-    assert resp.json()["ip_address"] == "10.9.0.1"
+    data = resp.json()
+    assert data["id"] == device_id
+    assert data["ip_address"] == "10.9.0.1"
 
 
 @pytest.mark.asyncio
