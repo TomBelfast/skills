@@ -12,10 +12,15 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Docker: /nmap-data (volume mount), dev: ../../../../network-diagnostics-output
+# Docker: /nmap-data (volume mount), dev: fallback via parents[5]
 _docker_path = Path("/nmap-data")
-_dev_path = Path(__file__).parents[5] / "network-diagnostics-output"
-NMAP_DIR = _docker_path if _docker_path.exists() else _dev_path
+if _docker_path.exists():
+    NMAP_DIR = _docker_path
+else:
+    try:
+        NMAP_DIR = Path(__file__).parents[5] / "network-diagnostics-output"
+    except IndexError:
+        NMAP_DIR = _docker_path  # fallback — will fail gracefully at import time
 
 
 def parse_host_discovery(xml_path: Path) -> list[dict]:
