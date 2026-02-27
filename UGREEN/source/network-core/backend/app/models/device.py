@@ -15,5 +15,6 @@ class Device(Base):
     vendor: Mapped[str | None] = mapped_column(String(255))
     label: Mapped[str | None] = mapped_column(String(255))
     device_type: Mapped[str] = mapped_column(String(50), default="unknown")
+    status: Mapped[str] = mapped_column(String(32), nullable=False, server_default="unknown")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
