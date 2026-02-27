@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash scripts/gcc_session_start.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
