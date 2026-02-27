@@ -42,3 +42,19 @@ async def test_delete_device(client):
 async def test_delete_device_not_found(client):
     resp = await client.delete("/api/v1/devices/nonexistent-id")
     assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_get_device_by_id(client):
+    create = await client.post("/api/v1/devices", json={"ip_address": "10.9.0.1"})
+    device_id = create.json()["id"]
+    resp = await client.get(f"/api/v1/devices/{device_id}")
+    assert resp.status_code == 200
+    assert resp.json()["id"] == device_id
+    assert resp.json()["ip_address"] == "10.9.0.1"
+
+
+@pytest.mark.asyncio
+async def test_get_device_by_id_not_found(client):
+    resp = await client.get("/api/v1/devices/nonexistent-id")
+    assert resp.status_code == 404
