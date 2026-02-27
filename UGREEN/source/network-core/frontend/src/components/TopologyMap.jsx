@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import cytoscape from 'cytoscape';
 
+// ── SVG node icons ────────────────────────────────────────────────────────────
 const icon = (svg) =>
   `data:image/svg+xml;utf8,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">${svg}</svg>`
@@ -14,8 +15,8 @@ const ICONS = {
     <circle cx="32" cy="10"  r="2.5" fill="#2ecc71"/>
     <circle cx="32" cy="20"  r="2.5" fill="#f1c40f"/>
     <circle cx="32" cy="30"  r="2.5" fill="#2ecc71"/>
-    <rect x="7" y="8"  width="16" height="4" rx="1" fill="rgba(60,200,80,0.3)"/>
-    <rect x="7" y="18" width="12" height="4" rx="1" fill="rgba(60,200,80,0.3)"/>
+    <rect x="7" y="8"  width="14" height="4" rx="1" fill="rgba(60,200,80,0.3)"/>
+    <rect x="7" y="18" width="10" height="4" rx="1" fill="rgba(60,200,80,0.3)"/>
   `),
   router: icon(`
     <rect x="2" y="21" width="36" height="13" rx="3" fill="white" opacity="0.92"/>
@@ -81,27 +82,92 @@ const TYPE_COLORS = {
 };
 
 const TYPE_SIZES = {
-  server:  52,
-  router:  60,
+  server:  50,
+  router:  62,
   nas:     52,
   iot:     40,
-  network: 48,
+  network: 46,
   unknown: 36,
 };
 
+// ── Smart label: hostname > known IP map > vendor prefix + last octet ─────────
+const KNOWN_IPS = {
+  '192.168.0.1':   'Prox-GW',
+  '192.168.0.10':  'prox10',
+  '192.168.0.50':  'prox50',
+  '192.168.0.100': 'prox100',
+  '192.168.0.3':   'NAS-UGREEN1',
+  '192.168.0.4':   'NAS-UGREEN2',
+  '192.168.0.18':  'MinIO-S3',
+  '192.168.0.71':  'MikroTik',
+  '192.168.0.254': 'ASUS-Router',
+  '192.168.0.129': 'TP-Link-1',
+  '192.168.0.22':  'TP-Link-2',
+  '192.168.0.30':  'TP-Link-3',
+  '192.168.0.253': 'TP-Link-4',
+};
+
+const VENDOR_PREFIX = [
+  ['proxmox',       'Prox'],
+  ['hewlett',       'Prox'],
+  [' hp ',          'Prox'],
+  ['ugreen',        'NAS'],
+  ['routerboard',   'MikroTik'],
+  ['mikrotik',      'MikroTik'],
+  ['asustek',       'ASUS'],
+  ['asus',          'ASUS'],
+  ['tp-link',       'TP-Link'],
+  ['espressif',     'ESP'],
+  ['tuya',          'Tuya'],
+  ['broadlink',     'BLink'],
+  ['nvidia',        'Nvidia'],
+  ['google',        'Google'],
+  ['amazon',        'Amazon'],
+  ['sony',          'Sony'],
+  ['raspberry',     'RasPi'],
+  ['d&m holdings',  'Denon'],
+  ['hisense',       'Hisense'],
+  ['micro-star',    'MSI'],
+  ['shenzhen',      'IoT'],
+  ['hui zhou',      'IoT'],
+  ['hangzhou',      'IoT'],
+];
+
+function smartLabel(d) {
+  if (d.label) return d.label;
+  if (KNOWN_IPS[d.ip_address]) return KNOWN_IPS[d.ip_address];
+  if (d.hostname) return d.hostname.split('.')[0];
+
+  const last   = d.ip_address.split('.').pop();
+  const vendor = (' ' + (d.vendor || '') + ' ').toLowerCase();
+
+  for (const [key, prefix] of VENDOR_PREFIX) {
+    if (vendor.includes(key)) return `${prefix}-${last}`;
+  }
+  return `.${last}`;
+}
+
+// ── Group compound nodes ──────────────────────────────────────────────────────
+const GROUP_LABELS = {
+  server:  'SERWERY',
+  router:  'ROUTERY',
+  nas:     'NAS',
+  iot:     'IoT',
+  network: 'SIEĆ / MEDIA',
+  unknown: 'INNE',
+};
+
 function makeNodeStyle(type) {
-  const color = TYPE_COLORS[type] || TYPE_COLORS.unknown;
-  const size  = TYPE_SIZES[type]  || TYPE_SIZES.unknown;
   return {
-    'background-color':  color,
-    'background-image':  ICONS[type] || ICONS.unknown,
-    'background-fit':    'cover',
-    'background-clip':   'none',
-    'border-width':      2,
-    'border-color':      color,
-    'border-opacity':    0.6,
-    width:  size,
-    height: size,
+    'background-color': TYPE_COLORS[type] || TYPE_COLORS.unknown,
+    'background-image': ICONS[type]       || ICONS.unknown,
+    'background-fit':   'cover',
+    'background-clip':  'none',
+    'border-width':     2,
+    'border-color':     TYPE_COLORS[type] || TYPE_COLORS.unknown,
+    'border-opacity':   0.5,
+    width:  TYPE_SIZES[type] || TYPE_SIZES.unknown,
+    height: TYPE_SIZES[type] || TYPE_SIZES.unknown,
   };
 }
 
@@ -112,74 +178,105 @@ export default function TopologyMap({ devices, links }) {
   useEffect(() => {
     if (!containerRef.current) return;
 
+    // Group parent nodes
+    const groupNodes = Object.entries(GROUP_LABELS).map(([type, label]) => ({
+      data: { id: `grp-${type}`, label },
+      classes: 'group',
+    }));
+
+    // Leaf device nodes
     const nodes = devices.map(d => ({
       data: {
-        id:      d.id,
-        label:   d.label || d.hostname || d.ip_address,
-        type:    d.device_type || 'unknown',
-        ip:      d.ip_address,
-        vendor:  d.vendor || '',
-        status:  d.status || 'unknown',
+        id:     d.id,
+        label:  smartLabel(d),
+        type:   d.device_type || 'unknown',
+        ip:     d.ip_address,
+        vendor: d.vendor || '',
+        status: d.status || 'unknown',
+        parent: `grp-${d.device_type || 'unknown'}`,
       },
     }));
 
+    // Edges
     const edges = links.map(l => ({
       data: { id: l.id, source: l.source_id, target: l.target_id, type: l.link_type || 'ethernet' },
     }));
 
     cyRef.current = cytoscape({
       container: containerRef.current,
-      elements: [...nodes, ...edges],
+      elements: [...groupNodes, ...nodes, ...edges],
       style: [
+        // ── group compound nodes ──
         {
-          selector: 'node',
+          selector: '.group',
+          style: {
+            'background-opacity':  0.06,
+            'background-color':    '#ffffff',
+            'border-width':        1,
+            'border-color':        'rgba(255,255,255,0.12)',
+            'border-style':        'dashed',
+            label:                 'data(label)',
+            color:                 'rgba(255,255,255,0.35)',
+            'font-size':           '12px',
+            'font-weight':         '700',
+            'letter-spacing':      '1px',
+            'text-valign':         'top',
+            'text-halign':         'center',
+            'text-margin-y':       -8,
+            padding:               '24px',
+            'shape':               'roundrectangle',
+          },
+        },
+        // ── default leaf node ──
+        {
+          selector: 'node:childless',
           style: {
             ...makeNodeStyle('unknown'),
-            label:          'data(label)',
-            color:          '#e8eaf6',
-            'font-size':    '10px',
-            'font-weight':  '500',
-            'text-valign':  'bottom',
-            'text-margin-y': 6,
+            label:                 'data(label)',
+            color:                 '#dde3f0',
+            'font-size':           '10px',
+            'font-weight':         '500',
+            'text-valign':         'bottom',
+            'text-margin-y':        6,
             'text-outline-color':  '#0d0d1a',
-            'text-outline-width':  2,
-            'text-max-width':      '90px',
+            'text-outline-width':   2,
+            'text-max-width':       '88px',
             'text-wrap':           'ellipsis',
           },
         },
+        // ── per-type overrides ──
         ...Object.keys(TYPE_COLORS).map(type => ({
-          selector: `node[type="${type}"]`,
+          selector: `node[type="${type}"]:childless`,
           style: makeNodeStyle(type),
         })),
+        // ── status: down ──
         {
           selector: 'node[status="down"]',
           style: {
-            'border-color':   '#e74c3c',
-            'border-width':    3,
-            'border-opacity':  1,
-            'background-blacken': 0.3,
+            'border-color':        '#e74c3c',
+            'border-width':         3,
+            'border-opacity':       1,
+            'background-blacken':   0.35,
           },
         },
+        // ── selection ──
         {
-          selector: 'node:selected',
-          style: {
-            'border-color':   '#f1c40f',
-            'border-width':    3,
-            'border-opacity':  1,
-          },
+          selector: 'node:childless:selected',
+          style: { 'border-color': '#f1c40f', 'border-width': 3, 'border-opacity': 1 },
         },
+        // ── edges ──
         {
           selector: 'edge',
           style: {
-            'line-color':     '#546e7a',
-            'line-opacity':   0.6,
-            width:            1.5,
-            'curve-style':    'bezier',
+            'line-color':    '#546e7a',
+            'line-opacity':  0.35,
+            width:           1.2,
+            'curve-style':   'bezier',
           },
         },
         {
           selector: 'edge[type="wifi"]',
-          style: { 'line-style': 'dashed', 'line-dash-pattern': [6, 3] },
+          style: { 'line-style': 'dashed', 'line-dash-pattern': [5, 3] },
         },
         {
           selector: 'edge:selected',
@@ -187,21 +284,25 @@ export default function TopologyMap({ devices, links }) {
         },
       ],
       layout: {
-        name:            'cose',
-        animate:         false,
-        nodeRepulsion:   6000,
-        idealEdgeLength: 120,
-        edgeElasticity:  200,
-        gravity:         0.25,
+        name:             'cose',
+        animate:          false,
+        nodeRepulsion:    8000,
+        idealEdgeLength:  100,
+        edgeElasticity:   250,
+        gravity:          0.3,
+        numIter:          500,
+        initialTemp:      200,
+        coolingFactor:    0.95,
+        minTemp:          1,
       },
     });
 
-    // Tooltip on hover
-    cyRef.current.on('mouseover', 'node', (evt) => {
+    // Tooltip: show full IP + vendor on hover
+    cyRef.current.on('mouseover', 'node:childless', evt => {
       const d = evt.target.data();
-      evt.target.style('label', `${d.label}\n${d.ip}\n${d.vendor}`);
+      evt.target.style('label', `${d.label}\n${d.ip}${d.vendor ? '\n' + d.vendor : ''}`);
     });
-    cyRef.current.on('mouseout', 'node', (evt) => {
+    cyRef.current.on('mouseout', 'node:childless', evt => {
       evt.target.style('label', evt.target.data('label'));
     });
 
@@ -209,6 +310,9 @@ export default function TopologyMap({ devices, links }) {
   }, [devices, links]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '700px', background: '#0d0d1a', borderRadius: '8px' }} />
+    <div
+      ref={containerRef}
+      style={{ width: '100%', height: '100%', background: '#0d0d1a', borderRadius: '8px' }}
+    />
   );
 }
