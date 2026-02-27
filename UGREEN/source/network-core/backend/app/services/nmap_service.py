@@ -123,13 +123,49 @@ def _guess_device_type(vendor: str, ports: list[int]) -> str:
     return "unknown"
 
 
+async def _auto_link_routers(db: AsyncSession) -> int:
+    """
+    Create ethernet links from every router to every non-router device.
+
+    Skips pairs that already have a link in either direction.
+    Returns the count of newly created links.
+    """
+    from sqlalchemy import select
+    from app.models.device import Device
+    from app.models.link import Link
+    from app.schemas.link import LinkCreate
+    from app.services import link_service
+
+    result = await db.execute(select(Device))
+    all_devices = list(result.scalars().all())
+
+    routers = [d for d in all_devices if d.device_type == "router"]
+    if not routers:
+        return 0
+
+    link_result = await db.execute(select(Link.source_id, Link.target_id))
+    existing = {(r[0], r[1]) for r in link_result.all()}
+
+    count = 0
+    for router in routers:
+        for device in all_devices:
+            if device.id == router.id:
+                continue
+            if (router.id, device.id) in existing or (device.id, router.id) in existing:
+                continue
+            await link_service.create_link(db, LinkCreate(source_id=router.id, target_id=device.id))
+            existing.add((router.id, device.id))
+            count += 1
+    return count
+
+
 async def import_from_files(db: AsyncSession) -> int:
     """
     Import hosts from Nmap XML files into the Device table.
 
     Reads nmap-host-discovery.xml and nmap-top200.xml from NMAP_DIR,
     merges data by IP address, skips existing IPs to avoid duplicates,
-    and bulk-creates Device records.
+    bulk-creates Device records, then auto-links routers to all devices.
 
     Returns the count of newly inserted devices.
     """
@@ -165,4 +201,6 @@ async def import_from_files(db: AsyncSession) -> int:
         )
         await device_service.create_device(db, data)
         count += 1
+
+    await _auto_link_routers(db)
     return count
