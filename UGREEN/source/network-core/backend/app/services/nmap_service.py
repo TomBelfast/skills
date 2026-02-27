@@ -7,14 +7,15 @@ Functions:
 - import_from_files(db) -> int                   — seeds Device table from XML files
 - _guess_device_type(vendor, ports) -> str       — heuristic device classification
 """
+import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Path resolution for XML files.
-# This file is at: source/network-core/backend/app/services/nmap_service.py
-# parents[0] = services/, [1] = app/, [2] = backend/, [3] = network-core/, [4] = source/, [5] = UGREEN/
-NMAP_DIR = Path(__file__).parents[5] / "network-diagnostics-output"
+# Docker: /nmap-data (volume mount), dev: ../../../../network-diagnostics-output
+_docker_path = Path("/nmap-data")
+_dev_path = Path(__file__).parents[5] / "network-diagnostics-output"
+NMAP_DIR = _docker_path if _docker_path.exists() else _dev_path
 
 
 def parse_host_discovery(xml_path: Path) -> list[dict]:

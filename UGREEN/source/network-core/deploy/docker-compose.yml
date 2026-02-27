@@ -26,6 +26,8 @@ services:
       DEBUG: "false"
     ports:
       - "8000:8000"
+    volumes:
+      - ../../network-diagnostics-output:/nmap-data:ro
     depends_on:
       postgres:
         condition: service_healthy
