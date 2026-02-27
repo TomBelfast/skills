@@ -1,0 +1,13 @@
+# Pliki z sekretami - nie commitować
+.claude/mcp.json
+.claude/settings.local.json
+proxmox_mcp.log
+*.log
+
+# Środowiska Python
+.venv/
+__pycache__/
+*.pyc
+
+# Narzędzia
+tools/nmap/*.exe
