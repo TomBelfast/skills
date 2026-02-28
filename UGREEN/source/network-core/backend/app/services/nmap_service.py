@@ -103,23 +103,51 @@ def _guess_device_type(vendor: str, ports: list[int]) -> str:
     """
     Heuristic device type classification based on vendor string and open ports.
 
-    Returns one of: "server", "nas", "router", "network", "iot", "unknown".
+    Returns one of: "server", "nas", "router", "switch", "media", "console", "printer", "iot", "network", "unknown".
     """
     vendor_lower = (vendor or "").lower()
+    ports_set = set(ports)
+
+    # 1. High Priority Keywords
     if "proxmox" in vendor_lower:
         return "server"
     if "ugreen" in vendor_lower:
         return "nas"
-    if "hewlett" in vendor_lower or "hp" in vendor_lower:
-        return "server"
+    if "qnap" in vendor_lower or "synology" in vendor_lower:
+        return "nas"
     if "routerboard" in vendor_lower or "mikrotik" in vendor_lower:
         return "router"
-    if "asus" in vendor_lower or "tp-link" in vendor_lower:
+    if "asustek" in vendor_lower or "asus" in vendor_lower:
         return "router"
-    if "espressif" in vendor_lower or "tuya" in vendor_lower or "broadlink" in vendor_lower:
+    if "tp-link" in vendor_lower:
+        # TP-Link is often a switch or AP
+        if any(p in ports_set for p in [80, 443]):
+            return "switch"
+        return "router"
+    if "hewlett" in vendor_lower or " hp " in vendor_lower:
+        if any(p in ports_set for p in [9100, 515, 631]): # JetDirect / LPD / IPP
+            return "printer"
+        return "server"
+    if "sony" in vendor_lower or "nvidia" in vendor_lower or "google" in vendor_lower or "amazon" in vendor_lower:
+        return "media"
+    if "interactive entertainment" in vendor_lower or "nintendo" in vendor_lower or "microsoft" in vendor_lower:
+        if "xbox" in vendor_lower or "playstation" in vendor_lower:
+            return "console"
+        if "interactive entertainment" in vendor_lower: # Sony PlayStation
+            return "console"
+    if "espressif" in vendor_lower or "tuya" in vendor_lower or "broadlink" in vendor_lower or "shenzhen" in vendor_lower:
         return "iot"
-    if 80 in ports or 443 in ports or 8080 in ports or 8443 in ports:
+
+    # 2. Port-based Fallbacks
+    if any(p in ports_set for p in [9100, 631]):
+        return "printer"
+    if any(p in ports_set for p in [32400, 8096, 5000]): # Plex, Emby, Synology
+        return "nas"
+    if any(p in ports_set for p in [8006, 22]):
+        return "server"
+    if any(p in ports_set for p in [80, 443, 8080, 8443]):
         return "network"
+
     return "unknown"
 
 

@@ -15,6 +15,7 @@ class Device(Base):
     vendor: Mapped[str | None] = mapped_column(String(255))
     label: Mapped[str | None] = mapped_column(String(255))
     device_type: Mapped[str] = mapped_column(String(50), default="unknown")
+    image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     status: Mapped[str] = mapped_column(String(32), nullable=False, server_default="unknown")
     x_pos: Mapped[float | None] = mapped_column(Float, nullable=True)
     y_pos: Mapped[float | None] = mapped_column(Float, nullable=True)

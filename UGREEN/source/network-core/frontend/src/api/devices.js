@@ -25,3 +25,7 @@ export async function patchDevice(id, patch) {
   const { data } = await axios.patch(`${API_BASE}/api/v1/devices/${id}`, patch);
   return data;
 }
+
+export async function deleteDevice(id) {
+  await axios.delete(`${API_BASE}/api/v1/devices/${id}`);
+}

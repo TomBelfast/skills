@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_, delete as sql_delete
 from app.models.device import Device
+from app.models.link import Link
 from app.schemas.device import DeviceCreate, DevicePatch
 import uuid
 
@@ -37,6 +38,11 @@ async def delete_device(db: AsyncSession, device_id: str) -> bool:
     device = await db.get(Device, device_id)
     if not device:
         return False
+    await db.execute(
+        sql_delete(Link).where(
+            or_(Link.source_id == device_id, Link.target_id == device_id)
+        )
+    )
     await db.delete(device)
     await db.commit()
     return True
