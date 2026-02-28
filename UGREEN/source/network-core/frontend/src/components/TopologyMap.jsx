@@ -366,6 +366,33 @@ const ICONS = {
     <text x="64" y="65" text-anchor="middle" font-family="Arial" font-size="40" font-weight="bold" fill="#546e7a" opacity="0.6">?</text>
     <rect x="48" y="100" width="32" height="10" rx="2" fill="#546e7a"/>
   </svg>`),
+  vm: svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+    <rect x="14" y="14" width="100" height="100" rx="12" fill="#2a2a2a" stroke="#444" stroke-width="4" stroke-dasharray="8 8"/>
+    <rect x="34" y="34" width="60" height="60" rx="6" fill="#8e24aa"/>
+    <text x="64" y="74" text-anchor="middle" font-family="Arial" font-size="32" font-weight="bold" fill="#fff">VM</text>
+  </svg>`),
+  ct: svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+    <rect x="14" y="24" width="100" height="80" rx="6" fill="#1565c0" stroke="#0d47a1" stroke-width="3"/>
+    <path d="M14 44 L114 44 M14 64 L114 64 M14 84 L114 84" stroke="#0d47a1" stroke-width="3"/>
+    <path d="M34 24 L34 104 M64 24 L64 104 M94 24 L94 104" stroke="#0d47a1" stroke-width="3" stroke-dasharray="8 4"/>
+    <rect x="44" y="48" width="40" height="32" rx="4" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+    <text x="64" y="71" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#2c3e50">LXC</text>
+  </svg>`),
+  phone: svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+    <rect x="34" y="10" width="60" height="108" rx="8" fill="#34495e" stroke="#2c3e50" stroke-width="2"/>
+    <rect x="38" y="20" width="52" height="80" rx="4" fill="#ecf0f1"/>
+    <rect x="54" y="107" width="20" height="4" rx="2" fill="#7f8c8d"/>
+    <circle cx="64" cy="15" r="2" fill="#7f8c8d"/>
+    <rect x="42" y="24" width="44" height="72" rx="2" fill="#3498db" opacity="0.2"/>
+  </svg>`),
+  tv: svgUri(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+    <rect x="10" y="24" width="108" height="68" rx="4" fill="#2c3e50" stroke="#1a252f" stroke-width="3"/>
+    <rect x="14" y="28" width="100" height="60" rx="2" fill="#000"/>
+    <rect x="44" y="100" width="40" height="6" rx="2" fill="#7f8c8d"/>
+    <path d="M54 92 L74 92 L68 100 L60 100 Z" fill="#95a5a6"/>
+    <circle cx="64" cy="58" r="15" fill="#e74c3c" opacity="0.8"/>
+    <path d="M60 50 L74 58 L60 66 Z" fill="#fff"/>
+  </svg>`),
 };
 
 const TYPE_COLORS = {
@@ -379,6 +406,10 @@ const TYPE_COLORS = {
   network: '#2980b9',
   switch: '#34495e',
   ap: '#00bcd4',
+  vm: '#9b59b6',
+  ct: '#3498db',
+  phone: '#f39c12',
+  tv: '#c0392b',
   unknown: '#546e7a',
 };
 
@@ -393,6 +424,10 @@ const TYPE_SIZES = {
   network: 64,
   switch: 70,
   ap: 60,
+  vm: 65,
+  ct: 65,
+  phone: 50,
+  tv: 75,
   unknown: 60,
 };
 
@@ -460,6 +495,10 @@ const GROUP_LABELS = {
   iot: 'IoT',
   network: 'SIEĆ / MEDIA',
   switch: 'PRZEŁĄCZNIKI',
+  vm: 'MASZYNY WIRTUALNE',
+  ct: 'KONTENERY',
+  phone: 'URZĄDZENIA MOBILNE',
+  tv: 'RTV',
   unknown: 'INNE',
 };
 
