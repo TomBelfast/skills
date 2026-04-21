@@ -12,23 +12,43 @@ Kolekcja 117 Claude Code skilli z zainstalowaną **pętlą uczenia się** (Pre-R
 | `install.sh` | Skrypt instalacyjny — kopiuje do `~/.claude/skills/` | — |
 | `upgrade-skills.sh` | Skrypt do zainstalowania pętli uczenia na istniejących skillach (idempotentny) | — |
 
-## Instalacja na świeżym Claude
+## Instalacja (Claude / Codex / Cursor / Gemini)
 
 ```bash
 git clone https://github.com/TomBelfast/skills.git /tmp/skills && cd /tmp/skills
 
-# Tylko personalne (rekomendowane)
+# Claude Code (domyślnie → ~/.claude/skills)
 ./install.sh
 
-# Personalne + gstack (gstack najlepiej zainstalować kanonicznie — patrz gstack-skills/README.md)
+# Codex (→ ~/.codex/skills)
+./install.sh --tool codex
+
+# Cursor, Gemini, Agent
+./install.sh --tool cursor
+./install.sh --tool gemini
+./install.sh --tool agent
+
+# Własna ścieżka
+./install.sh --target /path/to/skills
+
+# Dołącz gstack (tylko sensowne dla Claude — gstack jest Claude-only)
 ./install.sh --with-gstack
 
-# Nadpisanie istniejących skilli (uwaga: zamaże lokalne learnings.md)
-./install.sh --force
-
-# Suchy bieg (podgląd co się wydarzy)
+# Suchy bieg (podgląd, nic nie kopiuje)
 ./install.sh --dry-run
+
+# Nadpisanie istniejących skilli ⚠️ WYMAŻE lokalne learnings.md
+./install.sh --force
 ```
+
+## Aktualizacja (pull nowych skilli, zachowanie learnings.md)
+
+```bash
+cd /tmp/skills && git pull
+./install.sh --tool claude     # dodaje tylko nowe skille, pomija istniejące → learnings.md nietknięte
+```
+
+Domyślne zachowanie `install.sh` to **safe sync** — kopiuje tylko foldery, których jeszcze nie ma w target. Twoje lokalne `learnings.md` (historia poprawek) **przeżywa każdy pull + re-install**. Flaga `--force` łamie tę gwarancję — używaj tylko, gdy świadomie chcesz zresetować skille do wersji z repo.
 
 Po instalacji uzupełnij `~/.claude/brand-context/*.md` swoim głosem, ICP i pozycjonowaniem — każdy skill produkujący pisany output automatycznie je załaduje.
 
