@@ -12,7 +12,52 @@ Kolekcja 117 Claude Code skilli z zainstalowaną **pętlą uczenia się** (Pre-R
 | `install.sh` | Skrypt instalacyjny — kopiuje do `~/.claude/skills/` | — |
 | `upgrade-skills.sh` | Skrypt do zainstalowania pętli uczenia na istniejących skillach (idempotentny) | — |
 
-## Instalacja (Claude / Codex / Cursor / Gemini)
+## Jedna komenda — aktualizuje wszystko i zachowuje `learnings.md`
+
+Wklej to do terminala (lub powiedz Claude Code: "uruchom to"):
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh)
+```
+
+Co robi:
+- pobiera najnowszą wersję repo z GitHub (nie trzeba niczego klonować)
+- **force-update** wszystkich istniejących skilli do wersji z repo (SKILL.md, references/, bin/, itd.)
+- **zachowuje** lokalne `learnings.md` w każdym skillu (Twoja historia uczenia się nie ginie)
+- **zachowuje** lokalne `brand-context/*.md` (Twoje wypełnione szablony nie są nadpisywane)
+- dodaje skille, których lokalnie nie masz
+
+Flagi:
+```bash
+# Codex / Cursor / Gemini
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool codex
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool cursor
+
+# Pomiń 32 skille gstack (lustro z garrytan/gstack)
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --no-gstack
+
+# Podgląd — pokaż co by się zmieniło, nie zmieniaj niczego
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --dry-run
+```
+
+## Uniwersalny prompt do wklejenia w Claude Code / Codex
+
+```
+Zsynchronizuj moje skille z https://github.com/TomBelfast/skills:
+- pobierz najnowszą wersję repo
+- force-update wszystkich istniejących skilli
+- zachowaj moje lokalne learnings.md
+- dodaj nowe skille
+
+Uruchom:
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh)
+
+Pokaż podsumowanie (ile dodane / zaktualizowane / bez zmian).
+```
+
+---
+
+## Manualna instalacja (alternatywa)
 
 ```bash
 git clone https://github.com/TomBelfast/skills.git /tmp/skills && cd /tmp/skills
