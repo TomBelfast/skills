@@ -1,135 +1,147 @@
-# Claude Code Skills — Self-Learning Pack
+# Multi-Tool Skills Pack
 
-Kolekcja 117 Claude Code skilli z zainstalowaną **pętlą uczenia się** (Pre-Run Checklist + `learnings.md` + Feedback Loop). Każdy skill czyta swoje `learnings.md` przed działaniem i zapisuje korekty użytkownika po wykonaniu — dzięki temu uczy się z Twoich poprawek między sesjami.
+Repo z podziałem skilli per narzędzie. Każdy tool pobiera tylko swój pack, w swojej strukturze i do swojej ścieżki instalacji.
 
-## Struktura
+## Struktura repo
 
-| Folder | Zawartość | Źródło |
+| Folder | Przeznaczenie |
+|---|---|
+| `sources/personal-skills/` | wspólne źródło moich skilli |
+| `sources/gstack-skills/` | wspólne źródło lustrzanego packa gstack |
+| `claude/skills/` | pack dla Claude Code |
+| `claude/gstack-skills/` | pack gstack dla Claude Code |
+| `cursor/skills/` | pack dla Cursora |
+| `cursor/gstack-skills/` | pack gstack dla Cursora |
+| `codex/skills/` | pack dla Codexa |
+| `gemini/skills/` | pack dla Gemini CLI |
+| `antigravity/skills/` | pack dla Antigravity |
+| `brand-context/` | wspólne szablony `voice-profile.md`, `icp.md`, `positioning.md` |
+| `scripts/build_tool_packs.py` | generator packów per-tool ze źródeł |
+
+## Ścieżki instalacji
+
+| Tool | Domyślny target | Pack w repo |
 |---|---|---|
-| `personal-skills/` | **85 skilli** osobistych | moje |
-| `gstack-skills/` | **32 skille** z projektu gstack (z dodaną pętlą uczenia na wierzchu) | [garrytan/gstack](https://github.com/garrytan/gstack) — **preferuj instalację kanoniczną**, patrz `gstack-skills/README.md` |
-| `brand-context/` | Szablony: `voice-profile.md`, `icp.md`, `positioning.md` | uzupełnij u siebie |
-| `install.sh` | Skrypt instalacyjny — kopiuje do `~/.claude/skills/` | — |
-| `upgrade-skills.sh` | Skrypt do zainstalowania pętli uczenia na istniejących skillach (idempotentny) | — |
+| Claude Code | `~/.claude/skills` | `claude/skills` |
+| Cursor | `~/.cursor/skills` | `cursor/skills` |
+| Codex | `~/.codex/skills` | `codex/skills` |
+| Gemini CLI | `~/.gemini/skills` | `gemini/skills` |
+| Antigravity | `~/.gemini/antigravity/skills` lub `~/.gemini/antigravity/global_skills` | `antigravity/skills` |
 
-## Jedna komenda — aktualizuje wszystko i zachowuje `learnings.md`
+`brand-context` trafia zawsze katalog wyżej niż `skills`, np.:
+- Claude: `~/.claude/brand-context`
+- Cursor: `~/.cursor/brand-context`
+- Codex: `~/.codex/brand-context`
+- Gemini: `~/.gemini/brand-context`
+- Antigravity: `~/.gemini/antigravity/brand-context`
 
-Wklej to do terminala (lub powiedz Claude Code: "uruchom to"):
+## Co różni packi
+
+- `Claude`: zachowuje obecny format i metadata z oryginalnych skilli.
+- `Cursor`: używa runtime `SKILL.md` zgodnego z lokalnym systemem skills w `~/.cursor/skills`.
+- `Codex`: frontmatter jest znormalizowany pod lepszy discovery w Codexie: `name` + jednowierszowy `description` od pierwszej linii.
+- `Gemini`: ten sam znormalizowany wariant co dla Codexa.
+- `Antigravity`: ten sam znormalizowany frontmatter co dla Codexa/Gemini, plus referencje są przepięte pod `resources/`, zgodnie z wymaganym układem `SKILL.md` / `scripts` / `examples` / `resources`.
+- `gstack`: lustro występuje tylko dla `Claude` i `Cursor`, bo tam mamy potwierdzony runtime oraz ścieżki.
+
+## Szybka synchronizacja
 
 ```bash
+# Claude Code
 bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh)
-```
 
-Co robi:
-- pobiera najnowszą wersję repo z GitHub (nie trzeba niczego klonować)
-- **force-update** wszystkich istniejących skilli do wersji z repo (SKILL.md, references/, bin/, itd.)
-- **zachowuje** lokalne `learnings.md` w każdym skillu (Twoja historia uczenia się nie ginie)
-- **zachowuje** lokalne `brand-context/*.md` (Twoje wypełnione szablony nie są nadpisywane)
-- dodaje skille, których lokalnie nie masz
-
-Flagi:
-```bash
-# Codex / Cursor / Gemini
+# Codex
 bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool codex
+
+# Cursor
 bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool cursor
 
-# Pomiń 32 skille gstack (lustro z garrytan/gstack)
-bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --no-gstack
+# Gemini CLI
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool gemini
 
-# Podgląd — pokaż co by się zmieniło, nie zmieniaj niczego
-bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --dry-run
+# Antigravity
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool antigravity
 ```
 
-## Uniwersalny prompt do wklejenia w Claude Code / Codex
-
-```
-Zsynchronizuj moje skille z https://github.com/TomBelfast/skills:
-- pobierz najnowszą wersję repo
-- force-update wszystkich istniejących skilli
-- zachowaj moje lokalne learnings.md
-- dodaj nowe skille
-
-Uruchom:
-bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh)
-
-Pokaż podsumowanie (ile dodane / zaktualizowane / bez zmian).
-```
-
----
-
-## Manualna instalacja (alternatywa)
+Flagi:
 
 ```bash
-git clone https://github.com/TomBelfast/skills.git /tmp/skills && cd /tmp/skills
+# pomiń mirror gstack (dotyczy tylko Claude/Cursor)
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool cursor --no-gstack
 
-# Claude Code (domyślnie → ~/.claude/skills)
+# podgląd bez zmian
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool codex --dry-run
+
+# własny target
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool gemini --target /some/path
+```
+
+`sync.sh` robi:
+- `git clone --depth=1` do katalogu tymczasowego,
+- wybiera właściwy pack per `--tool`,
+- force-update istniejących skilli z pominięciem `learnings.md`,
+- bootstrapuje brakujące `learnings.md`,
+- dodaje brakujące skille,
+- dodaje brakujące pliki z `brand-context/`,
+- dla `Antigravity` wybiera automatycznie `global_skills`, jeśli taki katalog już istnieje.
+
+## Instalacja z lokalnego klonu
+
+```bash
+git clone https://github.com/TomBelfast/skills.git /tmp/skills
+cd /tmp/skills
+
 ./install.sh
-
-# Codex (→ ~/.codex/skills)
 ./install.sh --tool codex
-
-# Cursor, Gemini, Agent
 ./install.sh --tool cursor
 ./install.sh --tool gemini
-./install.sh --tool agent
-
-# Własna ścieżka
-./install.sh --target /path/to/skills
-
-# Dołącz gstack (tylko sensowne dla Claude — gstack jest Claude-only)
-./install.sh --with-gstack
-
-# Suchy bieg (podgląd, nic nie kopiuje)
-./install.sh --dry-run
-
-# Nadpisanie istniejących skilli ⚠️ WYMAŻE lokalne learnings.md
-./install.sh --force
+./install.sh --tool antigravity
 ```
 
-## Aktualizacja (pull nowych skilli, zachowanie learnings.md)
+Flagi:
 
 ```bash
-cd /tmp/skills && git pull
-./install.sh --tool claude     # dodaje tylko nowe skille, pomija istniejące → learnings.md nietknięte
+# dołącz gstack tam, gdzie istnieje
+./install.sh --tool claude --with-gstack
+./install.sh --tool cursor --with-gstack
+
+# odśwież istniejące skille z repo, ale zachowaj learnings.md
+./install.sh --tool codex --force
+
+# podgląd
+./install.sh --tool gemini --dry-run
 ```
 
-Domyślne zachowanie `install.sh` to **safe sync** — kopiuje tylko foldery, których jeszcze nie ma w target. Twoje lokalne `learnings.md` (historia poprawek) **przeżywa każdy pull + re-install**. Flaga `--force` łamie tę gwarancję — używaj tylko, gdy świadomie chcesz zresetować skille do wersji z repo.
+## Regeneracja packów
 
-Po instalacji uzupełnij `~/.claude/brand-context/*.md` swoim głosem, ICP i pozycjonowaniem — każdy skill produkujący pisany output automatycznie je załaduje.
+Edytujesz tylko źródła:
+- `sources/personal-skills`
+- `sources/gstack-skills`
 
-## Jak działa pętla uczenia się
-
-Każdy `SKILL.md` ma **na samej górze** (zaraz po frontmatter):
-
-```markdown
-## Pre-Run Checklist (always execute before Step 1)
-1. Check if ./learnings.md exists → if yes, READ it now and apply ALL "Non-Negotiable Rules" for this entire session.
-2. Check if ../brand-context/voice-profile.md exists → load it for written outputs
-3. Check if ../brand-context/icp.md exists → load it for audience-aware work
-```
-
-I **na samym dole**:
-
-```markdown
-## Feedback Loop & Self-Improvement
-Po wygenerowaniu outputu Claude pyta: "Rate this output 1–5. What should I do differently next time?"
-Jeśli dostanie feedback — zapisuje go do ./learnings.md pod "Patterns Observed".
-Gdy ten sam typ poprawki pojawi się 2+ razy — promuje się do "Non-Negotiable Rules".
-```
-
-Efekt: skill poprawia się z każdym użyciem, bez ręcznego edytowania SKILL.md.
-
-## Aplikacja pętli na własnym zbiorze skilli
-
-Jeśli masz już `~/.claude/skills/` i chcesz dodać pętlę uczenia do istniejących skilli (bez modyfikowania ich zawartości):
+Po zmianach odpal:
 
 ```bash
-./upgrade-skills.sh
+./scripts/build_tool_packs.py
 ```
 
-Idempotentne: pomija skille, które już mają pętlę. Bezpiecznie uruchamiać wielokrotnie.
+Generator:
+- buduje packi `claude/cursor/codex/gemini/antigravity`,
+- normalizuje frontmatter dla `Codex/Gemini/Cursor/Antigravity`,
+- robi rewrite ścieżek gstack dla `Cursor`,
+- przepina `references/` na `resources/` w packu `Antigravity`.
 
-## Licencje
+## Remote installer
 
-- `personal-skills/` — moje, do wolnego użytku.
-- `gstack-skills/` — oryginał © garrytan / gstack; tu jest kopia lustrzana z moją personalizacją. Preferuj kanoniczną instalację z repo gstack.
+Możesz też instalować bez klonowania repo:
+
+```bash
+python3 install_remote.py --tool codex
+python3 install_remote.py --tool cursor --with-gstack
+python3 install_remote.py --tool antigravity
+```
+
+## Uwagi
+
+- `upgrade-skills.sh` zostaje jako pomocniczy skrypt legacy dla istniejących lokalnych skilli Claude.
+- Jeśli aktualizujesz źródła, nie edytuj ręcznie wygenerowanych packów per-tool; uruchom generator.
+- Jeśli `Codex` nadal nie widzi części skilli po syncu, restart sesji jest nadal wymagany po stronie loadera narzędzia.

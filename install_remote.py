@@ -1,133 +1,121 @@
-import os
+#!/usr/bin/env python3
+"""Install tool-specific skills directly from GitHub."""
+
+from __future__ import annotations
+
+import argparse
 import json
 import urllib.request
-import argparse
 from pathlib import Path
 
-# Konfiguracja
+
 REPO_OWNER = "TomBelfast"
 REPO_NAME = "skills"
 BRANCH = "main"
 
 API_BASE = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents"
-RAW_BASE = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}/{BRANCH}"
 
-def get_json(url):
-    try:
-        with urllib.request.urlopen(url) as response:
-            return json.loads(response.read().decode())
-    except urllib.error.HTTPError as e:
-        if e.code == 404: return None
-        raise e
 
-def download_file(file_url, dest_path):
-    try:
-        with urllib.request.urlopen(file_url) as response:
-            content = response.read()
-            with open(dest_path, "wb") as f:
-                f.write(content)
-        return True
-    except Exception as e:
-        print(f" (!) Blad pobierania {file_url}: {e}")
-        return False
+def get_json(url: str):
+    with urllib.request.urlopen(url) as response:
+        return json.loads(response.read().decode())
 
-def install_skill_files(skill_name, skill_files, target_dir, flatten=False):
-    """Instaluje pliki skilla w docelowym folderze"""
-    
-    # Dla Cursora (flatten=True): .cursor/rules/skill-name.mdc
-    # Dla innych (flatten=False): target_dir/skill-name/SKILL.md
-    
-    final_dir = target_dir
-    if not flatten:
-        final_dir = target_dir / skill_name
-    
-    final_dir.mkdir(parents=True, exist_ok=True)
-    
+
+def download_file(file_url: str, dest_path: Path) -> None:
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    with urllib.request.urlopen(file_url) as response:
+        dest_path.write_bytes(response.read())
+
+
+def resolve_antigravity_target(home: Path) -> Path:
+    global_skills = home / ".gemini" / "antigravity" / "global_skills"
+    if global_skills.exists():
+        return global_skills
+    return home / ".gemini" / "antigravity" / "skills"
+
+
+def tool_config(tool: str, home: Path) -> tuple[Path, str, str | None]:
+    if tool == "claude":
+        return home / ".claude" / "skills", "claude/skills", "claude/gstack-skills"
+    if tool == "cursor":
+        return home / ".cursor" / "skills", "cursor/skills", "cursor/gstack-skills"
+    if tool == "codex":
+        codex_home = home / ".codex"
+        return codex_home / "skills", "codex/skills", None
+    if tool == "gemini":
+        return home / ".gemini" / "skills", "gemini/skills", None
+    if tool == "antigravity":
+        return resolve_antigravity_target(home), "antigravity/skills", None
+    raise ValueError(f"Unsupported tool: {tool}")
+
+
+def sync_remote_dir(source_path: str, target_root: Path) -> int:
     count = 0
-    for file_info in skill_files:
-        if file_info['type'] != 'file':
+    entries = get_json(f"{API_BASE}/{source_path}?ref={BRANCH}")
+    for item in entries:
+        if item["type"] != "dir":
             continue
-            
-        filename = file_info['name']
-        download_url = file_info['download_url']
-        
-        if flatten:
-            # Logika dla Cursora: tylko markdowny, zmiana rozszerzenia na .mdc
-            if filename.lower() == 'skill.md':
-                dest_file = final_dir / f"{skill_name}.mdc"
-            elif filename.lower().endswith('.md'):
-                # Inne pliki md dolaczamy jako pomocnicze? 
-                # Cursor glownie patrzy na reguly. Dla uproszczenia bierzemy SKILL.md jako glowna regule.
-                # Mozemy ewentualnie dodac inne jako skill-name-extra.mdc
-                continue 
-            else:
-                continue
-        else:
-            # Logika dla Antigravity/Claude: zachowaj nazwy i strukture
-            dest_file = final_dir / filename
-            
-        print(f" -> {dest_file.name} ...", end="")
-        if download_file(download_url, dest_file):
-            print(" OK")
-            count += 1
-            
+        skill_name = item["name"]
+        skill_root = target_root / skill_name
+        skill_root.mkdir(parents=True, exist_ok=True)
+
+        stack = [(item["url"], skill_root)]
+        while stack:
+            url, local_root = stack.pop()
+            for child in get_json(url):
+                if child["type"] == "dir":
+                    stack.append((child["url"], local_root / child["name"]))
+                elif child["type"] == "file":
+                    download_file(child["download_url"], local_root / child["name"])
+        count += 1
     return count
 
-def main():
-    parser = argparse.ArgumentParser(description="Instalator Skilli AI (Remote)")
-    parser.add_argument("--antigravity", action="store_true", help="Instaluj dla Antigravity (~/.gemini/antigravity/skills)")
-    parser.add_argument("--claude", action="store_true", help="Instaluj dla Claude (~/.claude/skills)")
-    parser.add_argument("--cursor", action="store_true", help="Instaluj dla Cursora (./.cursor/rules)")
-    parser.add_argument("--all", action="store_true", help="Instaluj dla wszystkich znalezionych")
+
+def copy_missing_brand_context(home: Path, skills_dir: Path) -> int:
+    source = get_json(f"{API_BASE}/brand-context?ref={BRANCH}")
+    brand_dir = skills_dir.parent / "brand-context"
+    brand_dir.mkdir(parents=True, exist_ok=True)
+    added = 0
+    for item in source:
+        if item["type"] != "file" or not item["name"].endswith(".md"):
+            continue
+        target = brand_dir / item["name"]
+        if target.exists():
+            continue
+        download_file(item["download_url"], target)
+        added += 1
+    return added
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Install tool-specific skills from GitHub")
+    parser.add_argument("--tool", choices=["claude", "cursor", "codex", "gemini", "antigravity"], default="claude")
+    parser.add_argument("--target", help="Override install target directory")
+    parser.add_argument("--with-gstack", action="store_true", help="Also install mirrored gstack skills when available")
     args = parser.parse_args()
 
-    # Wykrywanie sciezek
     home = Path.home()
-    targets = []
+    default_target, source_path, gstack_path = tool_config(args.tool, home)
+    target_root = Path(args.target).expanduser() if args.target else default_target
+    target_root.mkdir(parents=True, exist_ok=True)
 
-    # 1. Antigravity
-    # 1. Antigravity / Gemini (Standard path from GEMINI.md)
-    ag_path = home / ".gemini" / "skills"
-    if args.antigravity or (args.all and ag_path.parent.exists()):
-        targets.append({"name": "Gemini/Antigravity", "path": ag_path, "flatten": False})
+    print(f"Tool:   {args.tool}")
+    print(f"Target: {target_root}")
+    print(f"Source: {source_path}")
 
-    # 2. Claude
-    claude_path = home / ".claude" / "skills"
-    if args.claude or (args.all and claude_path.parent.exists()):
-        targets.append({"name": "Claude", "path": claude_path, "flatten": False})
+    installed = sync_remote_dir(source_path, target_root)
+    installed_gstack = 0
+    if args.with_gstack and gstack_path:
+        installed_gstack = sync_remote_dir(gstack_path, target_root)
 
-    # 3. Cursor (biezacy katalog)
-    cursor_path = Path.cwd() / ".cursor" / "rules"
-    if args.cursor or args.all or (not args.antigravity and not args.claude):
-        targets.append({"name": "Cursor", "path": cursor_path, "flatten": True})
+    brand_added = copy_missing_brand_context(home, target_root)
 
-    print(f"--- Instalator Skilli: {REPO_OWNER}/{REPO_NAME} ---")
-    
-    # Pobierz liste skilli
-    print("Pobieranie listy skilli...")
-    skills_list = get_json(f"{API_BASE}/skills?ref={BRANCH}")
-    
-    if not skills_list:
-        print("Blad: Nie znaleziono folderu skills w repozytorium.")
-        return
+    print("")
+    print("=== Summary ===")
+    print(f"Skills:           {installed}")
+    print(f"Gstack mirror:    {installed_gstack}")
+    print(f"Brand templates:  {brand_added}")
 
-    for target in targets:
-        print(f"\n[TARGET] Instalacja dla: {target['name']}")
-        print(f"Sciezka: {target['path']}")
-        
-        for item in skills_list:
-            if item['type'] == 'dir':
-                skill_name = item['name']
-                if skill_name.startswith('.'): continue
-                
-                print(f"Skill: {skill_name}")
-                
-                # Pobierz zawartosc folderu skilla
-                skill_files = get_json(item['url'])
-                if skill_files:
-                    install_skill_files(skill_name, skill_files, target['path'], flatten=target['flatten'])
-
-    print("\nZakonczono!")
 
 if __name__ == "__main__":
     main()

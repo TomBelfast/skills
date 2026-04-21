@@ -1,24 +1,10 @@
 #!/bin/bash
-# sync.sh — One-shot skills sync from TomBelfast/skills.
+# sync.sh — sync tool-specific skills from TomBelfast/skills.
 #
-# Force-updates existing skills to the latest repo version.
-# Preserves local learnings.md (per-skill learning history).
-# Preserves local brand-context/*.md (user-filled templates).
-# Adds skills missing locally.
-#
-# Usage (paste directly into a terminal or Claude Code session):
-#   bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh)
-#   bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool codex
-#   bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --no-gstack
-#   bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --dry-run
-#
-# Flags:
-#   --tool claude|codex|cursor|gemini|agent   Target AI tool (default: claude)
-#   --target <path>                            Custom target skills dir
-#   --no-gstack                                Skip gstack-skills/ folder
-#   --dry-run                                  Preview without writing
+# Preserves local learnings.md and brand-context/*.md.
+# Refreshes existing skills to the version stored in the selected tool pack.
 
-set -e
+set -euo pipefail
 
 REPO="https://github.com/TomBelfast/skills.git"
 TMPDIR=$(mktemp -d)
@@ -30,45 +16,109 @@ BRAND_DST=""
 DRY=0
 WITH_GSTACK=1
 
+usage() {
+  cat <<'EOF'
+Usage:
+  bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh)
+  bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool codex
+  bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool antigravity
+  bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --no-gstack
+  bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --dry-run
+
+Flags:
+  --tool claude|cursor|codex|gemini|antigravity
+  --target <path>
+  --no-gstack
+  --dry-run
+EOF
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
-    --tool)       TOOL="$2"; shift 2 ;;
-    --target)     DST="$2"; shift 2 ;;
-    --dry-run)    DRY=1; shift ;;
-    --no-gstack)  WITH_GSTACK=0; shift ;;
-    -h|--help)    sed -n '2,22p' "$0"; exit 0 ;;
-    *)            echo "Unknown flag: $1 (use --help)"; exit 1 ;;
+    --tool) TOOL="$2"; shift 2 ;;
+    --target) DST="$2"; shift 2 ;;
+    --dry-run) DRY=1; shift ;;
+    --no-gstack) WITH_GSTACK=0; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown flag: $1"; usage; exit 1 ;;
   esac
 done
 
-if [ -z "$DST" ]; then
-  case "$TOOL" in
-    claude) DST="$HOME/.claude/skills";  BRAND_DST="$HOME/.claude/brand-context" ;;
-    codex)  DST="$HOME/.codex/skills";   BRAND_DST="$HOME/.codex/brand-context" ;;
-    cursor) DST="$HOME/.cursor/skills";  BRAND_DST="$HOME/.cursor/brand-context" ;;
-    gemini) DST="$HOME/.gemini/skills";  BRAND_DST="$HOME/.gemini/brand-context" ;;
-    agent)  DST="$HOME/.agent/skills";   BRAND_DST="$HOME/.agent/brand-context" ;;
-    *) echo "Unknown --tool '$TOOL'. Use: claude|codex|cursor|gemini|agent"; exit 1 ;;
-  esac
-fi
-[ -z "$BRAND_DST" ] && BRAND_DST="$(dirname "$DST")/brand-context"
+resolve_antigravity_target() {
+  if [ -d "$HOME/.gemini/antigravity/global_skills" ]; then
+    echo "$HOME/.gemini/antigravity/global_skills"
+  elif [ -d "$HOME/.gemini/antigravity/skills" ]; then
+    echo "$HOME/.gemini/antigravity/skills"
+  else
+    echo "$HOME/.gemini/antigravity/skills"
+  fi
+}
 
-echo "🔄 Syncing skills from $REPO"
-echo "   Target: $DST"
-echo "   Brand:  $BRAND_DST"
-[ "$DRY" -eq 1 ] && echo "   DRY RUN — no changes will be written"
+SRC_SKILLS=""
+SRC_GSTACK=""
+
+case "$TOOL" in
+  claude)
+    SRC_SKILLS="claude/skills"
+    SRC_GSTACK="claude/gstack-skills"
+    [ -z "$DST" ] && DST="$HOME/.claude/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$HOME/.claude/brand-context"
+    ;;
+  cursor)
+    SRC_SKILLS="cursor/skills"
+    SRC_GSTACK="cursor/gstack-skills"
+    [ -z "$DST" ] && DST="$HOME/.cursor/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$HOME/.cursor/brand-context"
+    ;;
+  codex)
+    SRC_SKILLS="codex/skills"
+    [ -z "$DST" ] && DST="${CODEX_HOME:-$HOME/.codex}/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="${CODEX_HOME:-$HOME/.codex}/brand-context"
+    ;;
+  gemini)
+    SRC_SKILLS="gemini/skills"
+    [ -z "$DST" ] && DST="$HOME/.gemini/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$HOME/.gemini/brand-context"
+    ;;
+  antigravity)
+    SRC_SKILLS="antigravity/skills"
+    [ -z "$DST" ] && DST="$(resolve_antigravity_target)"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$(dirname "$DST")/brand-context"
+    ;;
+  *)
+    echo "Unknown --tool '$TOOL'. Use: claude|cursor|codex|gemini|antigravity"
+    exit 1
+    ;;
+esac
+
+echo "Syncing skills from $REPO"
+echo "  Tool:   $TOOL"
+echo "  Target: $DST"
+echo "  Brand:  $BRAND_DST"
+[ "$DRY" -eq 1 ] && echo "  Mode:   DRY RUN"
 echo ""
 
 git clone --depth=1 --quiet "$REPO" "$TMPDIR/repo"
+
+SRC_ROOT="$TMPDIR/repo/$SRC_SKILLS"
+GSTACK_ROOT="$TMPDIR/repo/$SRC_GSTACK"
+
+if [ ! -d "$SRC_ROOT" ]; then
+  echo "Missing tool pack in repo: $SRC_SKILLS"
+  exit 1
+fi
+
 mkdir -p "$DST" "$BRAND_DST"
 
-added=0; updated=0; unchanged=0
+added=0
+updated=0
+unchanged=0
 
 sync_skill() {
   local src="$1"
-  local name
+  local name target
   name=$(basename "$src")
-  local target="$DST/$name"
+  target="$DST/$name"
 
   if [ ! -d "$target" ]; then
     if [ "$DRY" -eq 1 ]; then
@@ -77,13 +127,12 @@ sync_skill() {
       mkdir -p "$target"
       rsync -a "$src/" "$target/"
     fi
-    added=$((added+1))
+    added=$((added + 1))
     return
   fi
 
-  # compare ignoring learnings.md (which is personal, preserved across updates)
-  if diff -rq --brief --exclude='learnings.md' "$src" "$target" > /dev/null 2>&1; then
-    unchanged=$((unchanged+1))
+  if diff -rq --brief --exclude='learnings.md' "$src" "$target" >/dev/null 2>&1; then
+    unchanged=$((unchanged + 1))
     return
   fi
 
@@ -91,42 +140,44 @@ sync_skill() {
     echo "[update] $name"
   else
     rsync -a --delete --exclude='learnings.md' "$src/" "$target/"
-    # bootstrap learnings.md from repo template if local doesn't have one yet
     if [ ! -f "$target/learnings.md" ] && [ -f "$src/learnings.md" ]; then
       cp "$src/learnings.md" "$target/learnings.md"
     fi
   fi
-  updated=$((updated+1))
+  updated=$((updated + 1))
 }
 
-for d in "$TMPDIR/repo/personal-skills"/*/; do
-  [ -d "$d" ] || continue
-  sync_skill "$d"
+for skill in "$SRC_ROOT"/*/; do
+  [ -d "$skill" ] || continue
+  sync_skill "$skill"
 done
 
-if [ "$WITH_GSTACK" -eq 1 ] && [ -d "$TMPDIR/repo/gstack-skills" ]; then
-  for d in "$TMPDIR/repo/gstack-skills"/*/; do
-    [ -d "$d" ] || continue
-    sync_skill "$d"
+if [ "$WITH_GSTACK" -eq 1 ] && [ -n "$SRC_GSTACK" ] && [ -d "$GSTACK_ROOT" ]; then
+  for skill in "$GSTACK_ROOT"/*/; do
+    [ -d "$skill" ] || continue
+    sync_skill "$skill"
   done
 fi
 
-# brand-context: only add if missing (user edits must survive)
 brand_added=0
-for f in "$TMPDIR/repo/brand-context"/*.md; do
-  [ -f "$f" ] || continue
-  bname=$(basename "$f")
-  btarget="$BRAND_DST/$bname"
-  if [ ! -f "$btarget" ]; then
-    [ "$DRY" -eq 1 ] && echo "[brand]  $bname" || cp "$f" "$btarget"
-    brand_added=$((brand_added+1))
+for file in "$TMPDIR/repo/brand-context"/*.md; do
+  [ -f "$file" ] || continue
+  name=$(basename "$file")
+  target="$BRAND_DST/$name"
+  if [ ! -f "$target" ]; then
+    if [ "$DRY" -eq 1 ]; then
+      echo "[brand]  $name"
+    else
+      cp "$file" "$target"
+    fi
+    brand_added=$((brand_added + 1))
   fi
 done
 
 echo ""
 echo "=== Sync summary ==="
-echo "Added (new):       $added"
-echo "Updated:           $updated  (SKILL.md & files refreshed, learnings.md preserved)"
+echo "Added:             $added"
+echo "Updated:           $updated"
 echo "Unchanged:         $unchanged"
 echo "Brand templates:   $brand_added added"
 echo ""

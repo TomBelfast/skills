@@ -1,102 +1,178 @@
 #!/bin/bash
-# install.sh — Installs/updates Claude Code skills with self-learning loop pre-installed.
-#
-# Usage:
-#   ./install.sh                       # → ~/.claude/skills (default)
-#   ./install.sh --tool codex          # → ~/.codex/skills
-#   ./install.sh --tool cursor         # → ~/.cursor/skills
-#   ./install.sh --tool gemini         # → ~/.gemini/skills
-#   ./install.sh --target /some/path   # → custom path
-#   ./install.sh --with-gstack         # also copy gstack-skills/ (mirror of garrytan/gstack)
-#   ./install.sh --force               # overwrite existing (WIPES local learnings.md!)
-#   ./install.sh --dry-run             # preview only
+# install.sh — install tool-specific skills from this repository.
 
-set -e
+set -euo pipefail
 
 SRC="$(cd "$(dirname "$0")" && pwd)"
 
 TOOL="claude"
 DST=""
 BRAND_DST=""
-FORCE=0
 DRY=0
+FORCE=0
 WITH_GSTACK=0
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./install.sh
+  ./install.sh --tool codex
+  ./install.sh --tool antigravity
+  ./install.sh --with-gstack
+  ./install.sh --force
+  ./install.sh --dry-run
+
+Flags:
+  --tool claude|cursor|codex|gemini|antigravity
+  --target <path>
+  --with-gstack
+  --force      Refresh existing skills from the selected pack, preserving learnings.md
+  --dry-run
+EOF
+}
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    --tool)      TOOL="$2"; shift 2 ;;
-    --target)    DST="$2"; shift 2 ;;
-    --force)     FORCE=1; shift ;;
-    --dry-run)   DRY=1; shift ;;
+    --tool) TOOL="$2"; shift 2 ;;
+    --target) DST="$2"; shift 2 ;;
     --with-gstack) WITH_GSTACK=1; shift ;;
-    -h|--help)   sed -n '2,14p' "$0"; exit 0 ;;
-    *)           echo "Unknown flag: $1"; exit 1 ;;
+    --force) FORCE=1; shift ;;
+    --dry-run) DRY=1; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown flag: $1"; usage; exit 1 ;;
   esac
 done
 
-if [ -z "$DST" ]; then
-  case "$TOOL" in
-    claude) DST="$HOME/.claude/skills"; BRAND_DST="$HOME/.claude/brand-context" ;;
-    codex)  DST="$HOME/.codex/skills";  BRAND_DST="$HOME/.codex/brand-context" ;;
-    cursor) DST="$HOME/.cursor/skills"; BRAND_DST="$HOME/.cursor/brand-context" ;;
-    gemini) DST="$HOME/.gemini/skills"; BRAND_DST="$HOME/.gemini/brand-context" ;;
-    agent)  DST="$HOME/.agent/skills";  BRAND_DST="$HOME/.agent/brand-context" ;;
-    *) echo "Unknown --tool '$TOOL'. Use: claude|codex|cursor|gemini|agent, or --target <path>"; exit 1 ;;
-  esac
+resolve_antigravity_target() {
+  if [ -d "$HOME/.gemini/antigravity/global_skills" ]; then
+    echo "$HOME/.gemini/antigravity/global_skills"
+  elif [ -d "$HOME/.gemini/antigravity/skills" ]; then
+    echo "$HOME/.gemini/antigravity/skills"
+  else
+    echo "$HOME/.gemini/antigravity/skills"
+  fi
+}
+
+SRC_SKILLS=""
+SRC_GSTACK=""
+
+case "$TOOL" in
+  claude)
+    SRC_SKILLS="$SRC/claude/skills"
+    SRC_GSTACK="$SRC/claude/gstack-skills"
+    [ -z "$DST" ] && DST="$HOME/.claude/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$HOME/.claude/brand-context"
+    ;;
+  cursor)
+    SRC_SKILLS="$SRC/cursor/skills"
+    SRC_GSTACK="$SRC/cursor/gstack-skills"
+    [ -z "$DST" ] && DST="$HOME/.cursor/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$HOME/.cursor/brand-context"
+    ;;
+  codex)
+    SRC_SKILLS="$SRC/codex/skills"
+    [ -z "$DST" ] && DST="${CODEX_HOME:-$HOME/.codex}/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="${CODEX_HOME:-$HOME/.codex}/brand-context"
+    ;;
+  gemini)
+    SRC_SKILLS="$SRC/gemini/skills"
+    [ -z "$DST" ] && DST="$HOME/.gemini/skills"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$HOME/.gemini/brand-context"
+    ;;
+  antigravity)
+    SRC_SKILLS="$SRC/antigravity/skills"
+    [ -z "$DST" ] && DST="$(resolve_antigravity_target)"
+    [ -z "$BRAND_DST" ] && BRAND_DST="$(dirname "$DST")/brand-context"
+    ;;
+  *)
+    echo "Unknown --tool '$TOOL'. Use: claude|cursor|codex|gemini|antigravity"
+    exit 1
+    ;;
+esac
+
+if [ ! -d "$SRC_SKILLS" ]; then
+  echo "Missing local tool pack: $SRC_SKILLS"
+  exit 1
 fi
 
-[ -z "$BRAND_DST" ] && BRAND_DST="$(dirname "$DST")/brand-context"
-
+echo "Tool:   $TOOL"
 echo "Target: $DST"
 echo "Brand:  $BRAND_DST"
+[ "$DRY" -eq 1 ] && echo "Mode:   DRY RUN"
 echo ""
 
 mkdir -p "$DST" "$BRAND_DST"
 
-added=0; skipped=0; overwritten=0
+added=0
+updated=0
+skipped=0
 
-sync_folder() {
-  local folder="$1"
-  for d in "$SRC/$folder"/*/; do
-    [ -d "$d" ] || continue
-    local name=$(basename "$d")
-    local target="$DST/$name"
-    if [ -d "$target" ]; then
-      if [ "$FORCE" -eq 1 ]; then
-        [ "$DRY" -eq 1 ] && echo "[would overwrite] $folder/$name" || { rm -rf "$target"; cp -a "$d" "$target"; }
-        overwritten=$((overwritten+1))
-      else
-        skipped=$((skipped+1))
-      fi
+install_skill() {
+  local src="$1"
+  local name target
+  name=$(basename "$src")
+  target="$DST/$name"
+
+  if [ ! -d "$target" ]; then
+    if [ "$DRY" -eq 1 ]; then
+      echo "[add]    $name"
     else
-      [ "$DRY" -eq 1 ] && echo "[would add] $folder/$name" || cp -a "$d" "$target"
-      added=$((added+1))
+      mkdir -p "$target"
+      rsync -a "$src/" "$target/"
     fi
-  done
+    added=$((added + 1))
+    return
+  fi
+
+  if [ "$FORCE" -eq 1 ]; then
+    if [ "$DRY" -eq 1 ]; then
+      echo "[update] $name"
+    else
+      rsync -a --delete --exclude='learnings.md' "$src/" "$target/"
+      if [ ! -f "$target/learnings.md" ] && [ -f "$src/learnings.md" ]; then
+        cp "$src/learnings.md" "$target/learnings.md"
+      fi
+    fi
+    updated=$((updated + 1))
+  else
+    skipped=$((skipped + 1))
+  fi
 }
 
-sync_folder "personal-skills"
+for skill in "$SRC_SKILLS"/*/; do
+  [ -d "$skill" ] || continue
+  install_skill "$skill"
+done
 
-if [ "$WITH_GSTACK" -eq 1 ]; then
-  echo "⚠️  Copying gstack-skills/ (mirrored from github.com/garrytan/gstack)."
-  echo "   Canonical install (recommended for Claude):"
-  echo "   git clone https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup"
-  sync_folder "gstack-skills"
+if [ "$WITH_GSTACK" -eq 1 ] && [ -n "$SRC_GSTACK" ] && [ -d "$SRC_GSTACK" ]; then
+  for skill in "$SRC_GSTACK"/*/; do
+    [ -d "$skill" ] || continue
+    install_skill "$skill"
+  done
+elif [ "$WITH_GSTACK" -eq 1 ]; then
+  echo "No gstack mirror is defined for tool '$TOOL'; skipping."
 fi
 
-# brand-context — never overwrite (user's filled-in templates must survive)
-for f in "$SRC/brand-context"/*.md; do
-  name=$(basename "$f")
+brand_added=0
+for file in "$SRC/brand-context"/*.md; do
+  [ -f "$file" ] || continue
+  name=$(basename "$file")
   target="$BRAND_DST/$name"
   if [ ! -f "$target" ]; then
-    [ "$DRY" -eq 1 ] && echo "[would add brand-context] $name" || cp "$f" "$target"
+    if [ "$DRY" -eq 1 ]; then
+      echo "[brand]  $name"
+    else
+      cp "$file" "$target"
+    fi
+    brand_added=$((brand_added + 1))
   fi
 done
 
 echo ""
 echo "=== Summary ==="
-echo "Added:       $added"
-echo "Skipped:     $skipped  (already present — rerun with --force to overwrite, but that wipes local learnings.md)"
-echo "Overwritten: $overwritten"
+echo "Added:             $added"
+echo "Updated:           $updated"
+echo "Skipped:           $skipped"
+echo "Brand templates:   $brand_added added"
 echo ""
-echo "Next: fill in $BRAND_DST/*.md with your voice, ICP, and positioning."
+echo "Done. Target: $DST"
