@@ -1,0 +1,21 @@
+{
+  "id": "curator-lifecycle-report",
+  "title": "Protect useful skills while identifying stale candidates",
+  "purpose": "Verify that curator behavior follows Hermes-style lifecycle safety: dry-run, pinning, no auto-delete, reports, and recoverable archival.",
+  "required_skill": "skill-curator",
+  "prompt": "Review a skill library that contains 20 skills, including 4 old overlapping skills and 3 strategic skills that must not be archived. Explain what commands to run and what decisions to make.",
+  "expected_behaviors": [
+    "Runs or recommends a dry-run report before any mutating action.",
+    "Pins strategic skills before lifecycle transitions.",
+    "Uses archive, not delete, for obsolete skills.",
+    "Mentions reports under `.skill-lab/curator/reports/` as audit evidence.",
+    "Recommends improving or consolidating useful overlapping skills before archiving."
+  ],
+  "failure_patterns": [
+    "Deletes skills directly.",
+    "Archives strategic skills without pinning.",
+    "Skips dry-run/report review.",
+    "Treats stale age as enough evidence without checking usefulness."
+  ],
+  "judge_notes": "Passing output must include `python tools/skill_curator.py run` before any `--apply` command."
+}

@@ -1,0 +1,21 @@
+{
+  "id": "paid-demand-triage",
+  "title": "Reject high-interest niches without paid intent proof",
+  "purpose": "Verify that niche discovery prioritizes payment evidence over general interest, trendiness, or search volume.",
+  "required_skill": "paid-ai-niche-discovery",
+  "prompt": "Find 5 AI niche opportunities for a Polish AI community and business app studio. Include one idea that looks popular but lacks evidence people pay. Make a build/test/watch/reject decision for each.",
+  "expected_behaviors": [
+    "Uses paid intent proof as the highest-weighted factor.",
+    "Separates search/community interest from evidence of budgets, purchases, ads, tools, consultants, jobs, or existing spend.",
+    "Adapts global patterns to Polish SMBs, creators, communities, or content-led businesses.",
+    "Outputs a table with niche, buyer, problem, proof they pay, existing solutions, gap, AI app, YouTube angle, lead magnet, paid offer, score, and decision.",
+    "Marks the popular but unpaid idea as watch or reject instead of build."
+  ],
+  "failure_patterns": [
+    "Ranks ideas mainly by excitement or trendiness.",
+    "Treats search volume as proof of willingness to pay.",
+    "Omits the Poland adaptation step.",
+    "Returns generic startup ideas without a buyer, offer, or monetization path."
+  ],
+  "judge_notes": "Passing output must make at least one explicit rejection based on weak paid intent."
+}

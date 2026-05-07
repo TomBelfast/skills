@@ -1,0 +1,21 @@
+{
+  "id": "youtube-repurpose-package",
+  "title": "Repurpose a YouTube video into community and sales assets",
+  "purpose": "Verify that repurposing preserves buyer pain and creates platform-native assets with conversion tracking.",
+  "required_skill": "content-repurposing-system",
+  "prompt": "Repurpose a YouTube video about 'AI automations Polish SMBs will actually pay for' into Skool, newsletter, LinkedIn, X, Shorts, and sales assets.",
+  "expected_behaviors": [
+    "Extracts atomic ideas from the source promise.",
+    "Creates different formats per platform.",
+    "Includes CTAs into Skool, email, or paid offer.",
+    "Defines metrics for each derivative.",
+    "Adds a review checklist before scheduling."
+  ],
+  "failure_patterns": [
+    "Copies the same text across platforms.",
+    "Creates no Skool or email asset.",
+    "Omits CTA or metric.",
+    "Makes generic AI copy."
+  ],
+  "judge_notes": "Passing output must include a 7-day schedule and Skool discussion prompt."
+}

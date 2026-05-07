@@ -1,0 +1,123 @@
+{
+  "generated_at": "2026-05-06",
+  "selection_rule": "Fetch only sources with strong community signal or direct fit to paid AI niche discovery, YouTube-to-Skool growth, community/content apps, email, social media, and Polish SMB monetization.",
+  "sources": [
+    {
+      "repo": "gitroomhq/postiz-app",
+      "stars": 30037,
+      "type": "app-pattern-source",
+      "domains": ["social-media", "content-ops", "community-content-apps"],
+      "status": "fetched",
+      "decision": "reference-only",
+      "reason": "Very high community signal and direct social scheduling relevance, but AGPL app code is not a skill pack; extract product/workflow patterns only."
+    },
+    {
+      "repo": "mautic/mautic",
+      "stars": 9576,
+      "type": "app-pattern-source",
+      "domains": ["email-marketing", "marketing-automation", "lead-nurture"],
+      "status": "deferred",
+      "decision": "reference-only",
+      "reason": "High community signal but very large app repository; defer code fetch and use later for marketing automation architecture patterns."
+    },
+    {
+      "repo": "socioboard/Socioboard-5.0",
+      "stars": 1447,
+      "type": "app-pattern-source",
+      "domains": ["social-media", "analytics", "content-ops"],
+      "status": "deferred",
+      "decision": "reference-only",
+      "reason": "High social management relevance but large app repo and not a skill source."
+    },
+    {
+      "repo": "bekatom/awesome-growth-hacking",
+      "stars": 512,
+      "type": "resource-list",
+      "domains": ["growth", "paid-demand-research"],
+      "status": "fetched",
+      "decision": "reference-only",
+      "reason": "Highest-rated growth list from supplied links; useful as research source map."
+    },
+    {
+      "repo": "kostja94/marketing-skills",
+      "stars": 432,
+      "type": "skill-pack",
+      "domains": ["marketing", "seo", "content", "paid-ads", "social-media", "email"],
+      "status": "fetched",
+      "decision": "adapt-selected",
+      "reason": "Largest and best-rated supplied skill pack; import only selected high-fit skills."
+    },
+    {
+      "repo": "marketingtoolslist/awesome-marketing",
+      "stars": 320,
+      "type": "resource-list",
+      "domains": ["marketing-tools", "content", "campaigns"],
+      "status": "fetched",
+      "decision": "reference-only",
+      "reason": "Useful tool/source list, not a skill pack."
+    },
+    {
+      "repo": "ninjasort/awesome-marketing",
+      "stars": 230,
+      "type": "resource-list",
+      "domains": ["communities", "growth", "promotion"],
+      "status": "fetched",
+      "decision": "reference-only",
+      "reason": "Useful for finding community channels and distribution surfaces."
+    },
+    {
+      "repo": "Email-Dashboard/Email-Marketing",
+      "stars": 224,
+      "type": "app-pattern-source",
+      "domains": ["email-marketing", "crm", "newsletter"],
+      "status": "fetched",
+      "decision": "reference-only",
+      "reason": "Moderate community signal and direct email/CRM relevance; extract workflow ideas only."
+    },
+    {
+      "repo": "darkzOGx/youtube-automation-agent",
+      "stars": 173,
+      "type": "agent-pattern-source",
+      "domains": ["youtube", "automation", "content-production"],
+      "status": "fetched",
+      "decision": "reference-only",
+      "reason": "Useful YouTube automation architecture but not a skill pack."
+    },
+    {
+      "repo": "ScaleBrick/founder-marketing-skills",
+      "stars": 67,
+      "type": "skill-pack",
+      "domains": ["social-search", "founder-marketing", "competitor-analysis", "keyword-research"],
+      "status": "fetched",
+      "decision": "adapt-selected",
+      "reason": "Lower stars but direct high-fit skill pack for social search, competitor and keyword research."
+    },
+    {
+      "repo": "rafaecheve/Awesome-Growth-hacking",
+      "stars": 23,
+      "type": "resource-list",
+      "domains": ["growth"],
+      "status": "skipped",
+      "decision": "watch",
+      "reason": "Lower community signal and overlap with bekatom/awesome-growth-hacking."
+    },
+    {
+      "repo": "adityaarsharma/youtube-marketing-skills",
+      "stars": 6,
+      "type": "skill-pack-mcp",
+      "domains": ["youtube", "content-repurposing", "analytics"],
+      "status": "fetched",
+      "decision": "adapt-selected",
+      "reason": "Low stars but direct YouTube skill/MCP fit; use selectively with caution."
+    },
+    {
+      "repo": "wvn774/best-youtube-growth-tools",
+      "stars": 2,
+      "type": "resource-list",
+      "domains": ["youtube-tools"],
+      "status": "skipped",
+      "decision": "reject",
+      "reason": "Very low community signal and likely overlap with stronger YouTube sources."
+    }
+  ]
+}

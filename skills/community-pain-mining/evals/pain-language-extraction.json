@@ -1,0 +1,20 @@
+{
+  "id": "pain-language-extraction",
+  "title": "Extract repeated pains and customer language from communities",
+  "purpose": "Verify that community pain mining captures real buyer language and filters venting from monetizable pain.",
+  "required_skill": "community-pain-mining",
+  "prompt": "Analyze community discussions for creators who struggle to publish consistently across YouTube, Skool, newsletter, and LinkedIn. Produce pain themes, exact language to look for, monetization clues, and product hypotheses.",
+  "expected_behaviors": [
+    "Separates repeated pain from isolated complaints.",
+    "Captures buyer language that can be reused in hooks, landing pages, and sales calls.",
+    "Scores pains by frequency, urgency, proximity to revenue or cost, and willingness-to-pay clues.",
+    "Identifies where the target audience gathers and what terms to search.",
+    "Turns strong pains into specific AI app or service hypotheses."
+  ],
+  "failure_patterns": [
+    "Summarizes communities generically without quoting or preserving phrasing patterns.",
+    "Treats frustration as willingness to pay without evidence.",
+    "Does not connect pain to a buyer, offer, or validation test."
+  ],
+  "judge_notes": "Passing output must include monetization clues and search phrases for finding more evidence."
+}

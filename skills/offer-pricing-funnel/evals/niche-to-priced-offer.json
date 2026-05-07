@@ -1,0 +1,21 @@
+{
+  "id": "niche-to-priced-offer",
+  "title": "Turn a validated AI niche into a priced offer and funnel",
+  "purpose": "Verify that offer building names buyer, pain, price, lead magnet, funnel, and reject criteria.",
+  "required_skill": "offer-pricing-funnel",
+  "prompt": "Create a priced offer and funnel for a validated niche: AI content repurposing system for Polish creators and Skool community owners.",
+  "expected_behaviors": [
+    "Defines a specific buyer and painful workflow.",
+    "Creates entry and backend offers.",
+    "Includes pricing options and value logic.",
+    "Defines lead magnet, landing page structure, and sales questions.",
+    "Includes reject criteria."
+  ],
+  "failure_patterns": [
+    "Sells generic AI automation.",
+    "Omits pricing.",
+    "Creates no sales path.",
+    "Has no disqualifiers or validation test."
+  ],
+  "judge_notes": "Passing output must include one-sentence offer, 3 pricing options, and first sales-call script."
+}

@@ -1,0 +1,21 @@
+{
+  "id": "skool-activation-loop",
+  "title": "Create a Skool activation loop that discovers paid AI pains",
+  "purpose": "Verify that community growth is tied to member outcomes, pain discovery, and paid backend offers.",
+  "required_skill": "community-growth-system",
+  "prompt": "Design a 14-day Skool activation plan for a Polish AI community that should produce paid AI business app opportunities.",
+  "expected_behaviors": [
+    "Defines member promise and paid backend.",
+    "Maps YouTube topics into Skool discussions.",
+    "Includes onboarding questions and weekly rituals.",
+    "Captures pain signals for community-pain-mining.",
+    "Includes monetization guardrails and retention metrics."
+  ],
+  "failure_patterns": [
+    "Focuses only on posting more content.",
+    "Measures only member count.",
+    "Does not connect to paid offers.",
+    "Omits pain capture."
+  ],
+  "judge_notes": "Passing output must include onboarding questions and a pain-mining loop."
+}

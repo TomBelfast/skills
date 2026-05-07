@@ -1,0 +1,21 @@
+{
+  "id": "youtube-skool-email-flow",
+  "title": "Build email nurture from YouTube and Skool attention to paid offers",
+  "purpose": "Verify that email strategy segments leads and moves them toward business app revenue.",
+  "required_skill": "email-nurture-system",
+  "prompt": "Design an email nurture system for people who join from YouTube into a Polish AI Skool community and may buy AI business app implementations.",
+  "expected_behaviors": [
+    "Segments by source, buyer type, pain, and readiness.",
+    "Includes welcome, proof, education, and offer emails.",
+    "Defines CRM tags and sales handoff criteria.",
+    "Includes deliverability basics.",
+    "Prioritizes clicks, replies, calls, and purchases over open rate."
+  ],
+  "failure_patterns": [
+    "Creates a generic newsletter calendar.",
+    "Uses no segmentation.",
+    "Omits deliverability.",
+    "Has no paid offer path."
+  ],
+  "judge_notes": "Passing output must include a 7-email sequence and sales handoff criteria."
+}

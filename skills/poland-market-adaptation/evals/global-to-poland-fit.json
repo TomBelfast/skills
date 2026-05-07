@@ -1,0 +1,20 @@
+{
+  "id": "global-to-poland-fit",
+  "title": "Adapt a proven global niche to the Polish market",
+  "purpose": "Verify that Poland adaptation tests local buyer reality, language, channels, pricing, and adoption friction.",
+  "required_skill": "poland-market-adaptation",
+  "prompt": "Evaluate whether a global AI content repurposing niche can work in Poland for creators, Skool communities, and SMBs. Decide what to adapt, what to avoid, and what first offer to test.",
+  "expected_behaviors": [
+    "Checks buyer type, budget maturity, Polish-language needs, local channels, trust barriers, and acceptable pricing.",
+    "Uses global proof as a starting point, not as automatic validation.",
+    "Translates the niche into a Poland-specific wedge, offer, and distribution path.",
+    "Identifies regulatory, platform, language, or cultural risks.",
+    "Recommends build, test, watch, or reject with reasoning."
+  ],
+  "failure_patterns": [
+    "Assumes global demand transfers directly to Poland.",
+    "Ignores local pricing and trust constraints.",
+    "Outputs generic localization advice without a first test."
+  ],
+  "judge_notes": "Passing output must specify a first Polish validation test."
+}

@@ -1,0 +1,20 @@
+{
+  "id": "offer-teardown",
+  "title": "Dissect competitor offers into reusable positioning evidence",
+  "purpose": "Verify that competitor analysis extracts buyer, promise, pricing, proof, funnel, and gaps instead of writing a surface summary.",
+  "required_skill": "competitor-offer-analysis",
+  "prompt": "Analyze three competitors in AI social media repurposing or content automation. Extract what they sell, who buys, pricing clues, proof, funnel, objections, gaps, and how we could position a Polish-market alternative.",
+  "expected_behaviors": [
+    "Breaks each offer into buyer, promise, use case, pricing model, proof assets, funnel steps, CTA, onboarding, and objection handling.",
+    "Identifies what is commoditized and what is defensible.",
+    "Finds gaps that matter to Polish SMBs, creators, communities, or content-led businesses.",
+    "Distinguishes product competitors, service competitors, and DIY alternatives.",
+    "Produces implications for our app, content, and paid offer."
+  ],
+  "failure_patterns": [
+    "Lists feature comparisons without buyer or offer analysis.",
+    "Ignores pricing and proof.",
+    "Suggests copying competitors without a differentiated wedge."
+  ],
+  "judge_notes": "Passing output must include a positioning recommendation for the Polish market."
+}

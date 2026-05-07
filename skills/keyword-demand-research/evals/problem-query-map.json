@@ -1,0 +1,20 @@
+{
+  "id": "problem-query-map",
+  "title": "Map searches to business problems and buying intent",
+  "purpose": "Verify that keyword demand research produces useful query clusters without confusing traffic with demand.",
+  "required_skill": "keyword-demand-research",
+  "prompt": "Create a keyword research map for an AI tool that helps YouTube creators turn videos into Skool posts, newsletters, and social clips. Focus on queries that reveal business pain and willingness to pay.",
+  "expected_behaviors": [
+    "Groups keywords by problem, buyer stage, and intent strength.",
+    "Includes query patterns such as AI for X, automate X, best tool for X, how to get more leads in X, alternative to X, pricing, and agency/service terms.",
+    "Flags low-intent educational searches separately from purchase or solution searches.",
+    "Suggests content angles that can validate demand before building.",
+    "Identifies missing paid-intent evidence that keyword data cannot prove alone."
+  ],
+  "failure_patterns": [
+    "Outputs a flat list of broad keywords.",
+    "Ranks keywords only by volume.",
+    "Does not connect queries to buyer pain, content, or offer tests."
+  ],
+  "judge_notes": "Passing output must explicitly warn that keywords are demand signals, not payment proof."
+}

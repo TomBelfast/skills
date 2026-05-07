@@ -1,0 +1,21 @@
+{
+  "id": "youtube-to-skool-plan",
+  "title": "Build a YouTube plan that drives Skool and paid AI app demand",
+  "purpose": "Verify that YouTube strategy connects topics to buyer pain, community conversion, and paid offers.",
+  "required_skill": "youtube-growth-system",
+  "prompt": "Create a 30-day YouTube growth plan for becoming the leading Polish AI community while validating paid business app niches.",
+  "expected_behaviors": [
+    "Starts from paid buyer pains, not generic AI news.",
+    "Includes title, hook, thumbnail brief, CTA, and repurposing path.",
+    "Connects videos to Skool, email capture, and a paid offer.",
+    "Defines analytics beyond views, including retention and lead conversion.",
+    "States what should not be automated yet."
+  ],
+  "failure_patterns": [
+    "Creates only a topic list.",
+    "Optimizes for subscribers without revenue path.",
+    "Skips Skool/community activation.",
+    "Omits metrics."
+  ],
+  "judge_notes": "Passing output must include one video-to-paid-offer funnel."
+}

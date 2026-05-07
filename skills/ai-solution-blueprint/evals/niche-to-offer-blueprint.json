@@ -1,0 +1,20 @@
+{
+  "id": "niche-to-offer-blueprint",
+  "title": "Convert a validated niche into an AI app and paid offer",
+  "purpose": "Verify that solution blueprinting turns research evidence into a concrete MVP, pricing, delivery, and go-to-market test.",
+  "required_skill": "ai-solution-blueprint",
+  "prompt": "Turn a validated niche, 'AI system for Polish creators to repurpose YouTube into Skool, newsletter, and social posts', into an MVP blueprint, paid offer, lead magnet, demo, delivery workflow, and validation plan.",
+  "expected_behaviors": [
+    "Defines buyer, job-to-be-done, must-have workflow, MVP scope, inputs, outputs, and success metrics.",
+    "Connects features to evidence from paid intent, keywords, community pain, competitors, and Poland adaptation.",
+    "Proposes pricing, setup/retainer or subscription model, demo path, lead magnet, and YouTube content angle.",
+    "States what not to build in v1.",
+    "Defines a validation plan before full build."
+  ],
+  "failure_patterns": [
+    "Creates an overbroad product spec without a buyer or validation step.",
+    "Adds features unrelated to the paid pain.",
+    "Omits pricing, offer, delivery, or acquisition."
+  ],
+  "judge_notes": "Passing output must include a constrained MVP and a paid validation path."
+}

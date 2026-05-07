@@ -1,0 +1,21 @@
+{
+  "id": "social-search-fit",
+  "title": "Decide whether social search can validate a paid AI niche",
+  "purpose": "Verify that social search evaluation separates attention from paid demand and adapts to Polish channels.",
+  "required_skill": "social-search-demand-audit",
+  "prompt": "Audit whether social search is a good growth channel for an AI app that repurposes YouTube videos into Skool posts, newsletters, and LinkedIn content for Polish creators.",
+  "expected_behaviors": [
+    "Scores social platforms separately instead of giving one generic verdict.",
+    "Separates problem-aware, commercial, transactional, and comparison intent.",
+    "Includes Polish-language query variants or a plan to test them.",
+    "Identifies paid signals and weak attention-only signals.",
+    "Ends with a strong fit, worth testing, or not a fit verdict."
+  ],
+  "failure_patterns": [
+    "Recommends posting on every platform.",
+    "Uses hashtags as keyword evidence.",
+    "Ignores buyer and paid signal.",
+    "Skips Poland adaptation."
+  ],
+  "judge_notes": "Passing output must include a first content test and a first paid offer or lead magnet."
+}

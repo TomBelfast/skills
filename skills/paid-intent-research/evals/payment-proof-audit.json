@@ -1,0 +1,20 @@
+{
+  "id": "payment-proof-audit",
+  "title": "Find concrete evidence that a niche already has budgets",
+  "purpose": "Verify that paid intent research distinguishes hard payment signals from weak proxy signals.",
+  "required_skill": "paid-intent-research",
+  "prompt": "Audit whether 'AI appointment follow-up for local service businesses' has paid intent. Do not assume demand from AI hype. List hard and weak signals separately, then decide whether to continue research.",
+  "expected_behaviors": [
+    "Looks for hard signals such as paid SaaS, agency offers, ads, pricing pages, consultants, marketplaces, jobs, RFPs, or active spending.",
+    "Labels weak signals such as blog posts, social chatter, free templates, and generic search volume.",
+    "Connects payment evidence to a specific buyer and budget owner.",
+    "States confidence and what evidence would change the decision.",
+    "Does not recommend build without at least two hard paid-intent signals."
+  ],
+  "failure_patterns": [
+    "Uses anecdotal interest as payment proof.",
+    "Does not separate buyer from end user.",
+    "Gives a positive decision without pricing or spending evidence."
+  ],
+  "judge_notes": "Passing output must include both hard and weak signal buckets."
+}
