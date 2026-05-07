@@ -52,6 +52,19 @@ python tools/skill_curator.py pin paid-ai-niche-discovery
 
 Raporty i stan lokalny są trzymane w `.skill-lab/curator/`.
 
+## Synchronizacja do agentów
+
+Canonical source of truth to katalog `skills/`. Skrypt `sync_skills_universal.py` publikuje te skille do lokalnych powierzchni różnych agentów:
+
+```bash
+python sync_skills_universal.py --list-targets
+python sync_skills_universal.py --target codex --target claude
+python sync_skills_universal.py --target codex --target claude --target cursor --apply
+python sync_skills_universal.py --all --apply
+```
+
+Domyślnie skrypt robi tylko dry-run. Zapis wymaga `--apply`. Usuwanie starych wpisów jest dostępne przez `--clean`, ale dotyczy wyłącznie skilli zapisanych wcześniej w manifestach `.skill-sync-manifest.json`.
+
 ## Jak zainstalować?
 
 Użyj umiejętności `skill-installer` w swojej sesji Antigravity:
