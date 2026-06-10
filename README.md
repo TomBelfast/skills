@@ -7,10 +7,14 @@ Kolekcja 117 Claude Code skilli z zainstalowaną **pętlą uczenia się** (Pre-R
 | Folder | Zawartość | Źródło |
 |---|---|---|
 | `personal-skills/` | **85 skilli** osobistych | moje |
-| `gstack-skills/` | **32 skille** z projektu gstack (z dodaną pętlą uczenia na wierzchu) | [garrytan/gstack](https://github.com/garrytan/gstack) — **preferuj instalację kanoniczną**, patrz `gstack-skills/README.md` |
+| `gstack-skills/` | **32 skille** z projektu gstack | [garrytan/gstack](https://github.com/garrytan/gstack) |
 | `brand-context/` | Szablony: `voice-profile.md`, `icp.md`, `positioning.md` | uzupełnij u siebie |
-| `install.sh` | Skrypt instalacyjny — kopiuje do `~/.claude/skills/` | — |
-| `upgrade-skills.sh` | Skrypt do zainstalowania pętli uczenia na istniejących skillach (idempotentny) | — |
+| `_template/` | Szablon nowego skilla z Auto-Correction Rules | — |
+| `install.sh` | Instalacja skilli + wstrzykiwanie Auto-Correction Rules | — |
+| `sync.sh` | Jednokomendowa aktualizacja wszystkiego z GitHub | — |
+| `push_skills.sh` | Push lokalnych skilli (których nie ma na GitHub) do repo | — |
+| `bootstrap_skills.sh` | Per-projekt: pull tylko wybranych skilli wg `.skills.conf` | — |
+| `inject_autocorrect.py` | Wstrzykuje `## Auto-Correction Rules` do każdego SKILL.md | — |
 
 ## Jedna komenda — aktualizuje wszystko i zachowuje `learnings.md`
 
@@ -57,7 +61,62 @@ Pokaż podsumowanie (ile dodane / zaktualizowane / bez zmian).
 
 ---
 
-## Manualna instalacja (alternatywa)
+## 🔄 Synchronizacja dwukierunkowa
+
+### PULL — GitHub → lokalnie (sync.sh)
+
+Jedna komenda — aktualizuje i wstrzykuje Auto-Correction Rules:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/sync.sh) --tool agent
+```
+
+### PUSH — lokalnie → GitHub (push_skills.sh)
+
+Masz lokalne skille, których nie ma na GitHubie? Wypchnij je:
+
+```bash
+bash push_skills.sh --local ~/.agents/skills
+# lub z podglądem:
+bash push_skills.sh --local ~/.agents/skills --dry-run
+```
+
+### 🎯 Per-projekt — bootstrap_skills.sh + .skills.conf
+
+Każde repo może określić, których skilli potrzebuje. Nie musisz instalować wszystkich.
+
+**Krok 1:** W katalogu projektu utwórz plik `.skills.conf`:
+```ini
+# .skills.conf — lista skilli potrzebnych w tym projekcie
+coolify-manager
+proxmox-full
+github-docker-vm1070
+karpathy-guidelines
+skill-creator
+```
+
+**Krok 2:** Uruchom (lub powiedz agentowi):
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/bootstrap_skills.sh)
+```
+
+Skrypt:
+- Ściągnie tylko wymienione skille (nie wszystkie)
+- Wstrzyknie Auto-Correction Rules
+- Opcja `--push` wyśle lokalne skille, których nie ma na GitHubie
+
+**Prompt do wklejenia agentowi na nowym projekcie:**
+```
+Uruchom:
+bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/bootstrap_skills.sh) --tool agent
+
+Jeśli w katalogu projektu nie ma pliku .skills.conf, skrypt go utworzy.
+Edytuj go, dodaj potrzebne skille, i uruchom bootstrap ponownie.
+Na końcu sprawdź katalog ~/.agents/skills/ i potwierdź co zostało zainstalowane.
+```
+
+---
+
 
 ```bash
 git clone https://github.com/TomBelfast/skills.git /tmp/skills && cd /tmp/skills
