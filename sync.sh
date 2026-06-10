@@ -1,5 +1,5 @@
 #!/bin/bash
-# sync.sh — One-shot skills sync from TomBelfast/skills.
+# sync.sh — One-shot skills sync from TomBelfast/skills + Auto-Correction injection.
 #
 # Force-updates existing skills to the latest repo version.
 # Preserves local learnings.md (per-skill learning history).
@@ -131,3 +131,19 @@ echo "Unchanged:         $unchanged"
 echo "Brand templates:   $brand_added added"
 echo ""
 echo "Done. Target: $DST"
+
+# --- Auto-Correction injection ---
+if command -v python3 &>/dev/null; then
+  echo ""
+  echo "🤖 Injecting Auto-Correction Rules into skills..."
+  INJECT_URL="https://raw.githubusercontent.com/TomBelfast/skills/main/inject_autocorrect.py"
+  TMP_INJECT=$(mktemp /tmp/inject_autocorrect.XXXXXX.py)
+  if curl -fsSL "$INJECT_URL" -o "$TMP_INJECT" 2>/dev/null; then
+    python3 "$TMP_INJECT" "$DST"
+  else
+    echo "⚠️  Could not download inject_autocorrect.py — skipping injection."
+  fi
+  rm -f "$TMP_INJECT"
+else
+  echo "⚠️  python3 not found — skipping Auto-Correction injection."
+fi

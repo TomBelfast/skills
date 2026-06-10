@@ -1,5 +1,5 @@
 #!/bin/bash
-# install.sh — Installs/updates Claude Code skills with self-learning loop pre-installed.
+# install.sh — Installs/updates skills and injects Auto-Correction Rules into all SKILL.md files.
 #
 # Usage:
 #   ./install.sh                       # → ~/.claude/skills (default)
@@ -100,3 +100,22 @@ echo "Skipped:     $skipped  (already present — rerun with --force to overwrit
 echo "Overwritten: $overwritten"
 echo ""
 echo "Next: fill in $BRAND_DST/*.md with your voice, ICP, and positioning."
+
+# --- Auto-Correction injection ---
+if command -v python3 &>/dev/null; then
+  echo ""
+  echo "🤖 Injecting Auto-Correction Rules into skills..."
+  INJECT_SCRIPT="$(dirname "$0")/inject_autocorrect.py"
+  if [ -f "$INJECT_SCRIPT" ]; then
+    python3 "$INJECT_SCRIPT" "$DST"
+  else
+    # fallback: download the script from the repo
+    INJECT_URL="https://raw.githubusercontent.com/TomBelfast/skills/main/inject_autocorrect.py"
+    TMP_INJECT=$(mktemp /tmp/inject_autocorrect.XXXXXX.py)
+    curl -fsSL "$INJECT_URL" -o "$TMP_INJECT" && python3 "$TMP_INJECT" "$DST"
+    rm -f "$TMP_INJECT"
+  fi
+else
+  echo "⚠️  python3 not found — skipping Auto-Correction injection. Run manually:"
+  echo "   python3 inject_autocorrect.py $DST"
+fi
