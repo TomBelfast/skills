@@ -1,4 +1,19 @@
-name: langchain-orchestrator
+## Auto-Correction Rules
+
+When you use this skill and find an error, outdated command, missing step,
+or pitfall — FIX IT IMMEDIATELY. Do not wait or ask permission.
+
+1. Read the current SKILL.md using your file reading tools.
+2. Edit it with your file editing tools (`replace_file_content` or `multi_replace_file_content`) to correct the mistake.
+3. Add any discovered pitfalls to the `## Pitfalls` section.
+4. Report what you fixed to the user.
+
+If a command doesn't work, a path is wrong, or a step is missing — 
+update the skill before finishing your current task.
+
+## Pitfalls
+
+- **yaml vs yml**: Be aware of `.yml` vs `.yaml` extensions in configuration files. If a file operation fails, always check both extensions.\n\nname: langchain-orchestrator
 description: Designing and implementing advanced AI systems using LangChain v0.2+. Use for building RAG pipelines, autonomous agents, multi-agent orchestrations, and complex prompt engineering workflows. Focused on production-ready chains, tracing (LangSmith), and efficient document processing.
 metadata:
   short-description: LangChain AI Systems Architect

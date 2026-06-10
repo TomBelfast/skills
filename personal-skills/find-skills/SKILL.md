@@ -4,6 +4,24 @@ description: Helps users discover and install agent skills when they ask questio
 ---
 
 
+
+## Auto-Correction Rules
+
+When you use this skill and find an error, outdated command, missing step,
+or pitfall — FIX IT IMMEDIATELY. Do not wait or ask permission.
+
+1. Read the current SKILL.md using your file reading tools.
+2. Edit it with your file editing tools (`replace_file_content` or `multi_replace_file_content`) to correct the mistake.
+3. Add any discovered pitfalls to the `## Pitfalls` section.
+4. Report what you fixed to the user.
+
+If a command doesn't work, a path is wrong, or a step is missing — 
+update the skill before finishing your current task.
+
+## Pitfalls
+
+- **yaml vs yml**: Be aware of `.yml` vs `.yaml` extensions in configuration files. If a file operation fails, always check both extensions.
+
 ## Pre-Run Checklist (always execute before Step 1)
 1. Check if ./learnings.md exists → if yes, READ it now and apply ALL "Non-Negotiable Rules" for this entire session.
 2. Check if ../brand-context/voice-profile.md exists → if this skill produces any written output (posts, emails, reports, copy) → load it.
