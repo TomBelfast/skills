@@ -101,18 +101,26 @@ bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/boots
 ```
 
 Skrypt:
-- Ściągnie tylko wymienione skille (nie wszystkie)
-- Wstrzyknie Auto-Correction Rules
-- Opcja `--push` wyśle lokalne skille, których nie ma na GitHubie
+- Ściągnie tylko wymienione skille z GitHub → aktualizuje te które się różnią (PULL)
+- **Automatycznie** wyśle lokalne skille których nie ma na GitHub (PUSH) — bez żadnej flagi
+- Wstrzyknie Auto-Correction Rules do każdego SKILL.md
 
-**Prompt do wklejenia agentowi na nowym projekcie:**
+Flagi:
+- `--no-push` — wyłącz auto-push do GitHub
+- `--dry-run` — tylko podgląd, nic nie zapisuje
+
+**Prompt do wklejenia agentowi na nowym lub istniejącym projekcie:**
 ```
 Uruchom:
 bash <(curl -fsSL https://raw.githubusercontent.com/TomBelfast/skills/main/bootstrap_skills.sh) --tool agent
 
-Jeśli w katalogu projektu nie ma pliku .skills.conf, skrypt go utworzy.
-Edytuj go, dodaj potrzebne skille, i uruchom bootstrap ponownie.
-Na końcu sprawdź katalog ~/.agents/skills/ i potwierdź co zostało zainstalowane.
+Co zrobi automatycznie:
+1. Pokaże Ci raport zmian (co zostanie pobrane, zaktualizowane, wysłane)
+2. Zapyta o zgodę `Apply these changes? [Y/n]` (chyba że użyjesz flagi `--yes`)
+3. PULL: pobierze i zaktualizuje skille z GitHub zgodnie z .skills.conf
+4. MERGE: zachowa Twoje lokalne wpisy w `## Pitfalls` i `learnings.md` podczas aktualizacji
+5. PUSH: wyśle na GitHub lokalne skille, których tam nie ma
+6. INJECT: doda Auto-Correction Rules do każdego SKILL.md
 ```
 
 ---

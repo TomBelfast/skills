@@ -62,6 +62,9 @@ echo ""
 git clone --depth=1 --quiet "$REPO" "$TMPDIR/repo"
 mkdir -p "$DST" "$BRAND_DST"
 
+TMP_MERGE=$(mktemp /tmp/merge_pitfalls.XXXXXX.py)
+curl -fsSL "https://raw.githubusercontent.com/TomBelfast/skills/main/merge_pitfalls.py" -o "$TMP_MERGE" 2>/dev/null || true
+
 added=0; updated=0; unchanged=0
 
 sync_skill() {
@@ -90,7 +93,11 @@ sync_skill() {
   if [ "$DRY" -eq 1 ]; then
     echo "[update] $name"
   else
-    rsync -a --delete --exclude='learnings.md' "$src/" "$target/"
+    # Merge pitfalls before rsync overwrites
+    if command -v python3 &>/dev/null && [ -f "$TMP_MERGE" ]; then
+      python3 "$TMP_MERGE" "$target/SKILL.md" "$src/SKILL.md" 2>/dev/null || true
+    fi
+    rsync -a --delete --exclude='learnings.md' --exclude='.git' "$src/" "$target/"
     # bootstrap learnings.md from repo template if local doesn't have one yet
     if [ ! -f "$target/learnings.md" ] && [ -f "$src/learnings.md" ]; then
       cp "$src/learnings.md" "$target/learnings.md"
@@ -147,3 +154,5 @@ if command -v python3 &>/dev/null; then
 else
   echo "⚠️  python3 not found — skipping Auto-Correction injection."
 fi
+
+rm -f "$TMP_MERGE"
